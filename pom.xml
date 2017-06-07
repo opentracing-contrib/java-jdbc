@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>io.opentracing.contrib</groupId>
     <artifactId>opentracing-jdbc</artifactId>
-    <version>0.0.2</version>
+    <version>0.0.3-SNAPSHOT</version>
 
     <name>${project.groupId}:${project.artifactId}</name>
     <description>OpenTracing Instrumentation for JDBC API</description>
@@ -13,7 +13,7 @@
         <url>http://github.com/opentracing-contrib/java-jdbc</url>
         <connection>scm:git:https://github.com/opentracing-contrib/java-jdbc.git</connection>
         <developerConnection>scm:git:https://github.com/opentracing-contrib/java-jdbc.git</developerConnection>
-        <tag>0.0.2</tag>
+        <tag>HEAD</tag>
     </scm>
 
     <licenses>
