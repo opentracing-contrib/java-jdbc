@@ -10,13 +10,11 @@ pom.xml
 <dependency>
     <groupId>io.opentracing.contrib</groupId>
     <artifactId>opentracing-jdbc</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2</version>
 </dependency>
 ```
 
 ## Usage
-
-`DefaultSpanManager` is used to get active span
 
 1. Add _tracing_ to jdbc url. E.g. jdbc:tracing:h2:mem:test
 
@@ -72,5 +70,5 @@ For dbcp2:
 
 [ci-img]: https://travis-ci.org/opentracing-contrib/java-jdbc.svg?branch=master
 [ci]: https://travis-ci.org/opentracing-contrib/java-jdbc
-[maven-img]: https://img.shields.io/maven-central/v/io.opentracing.contrib/opentracing-jdbc.svg?maxAge=2592000
+[maven-img]: https://img.shields.io/maven-central/v/io.opentracing.contrib/opentracing-jdbc.svg
 [maven]: http://search.maven.org/#search%7Cga%7C1%7Copentracing-jdbc
