@@ -1,10 +1,12 @@
 package io.opentracing.contrib.jdbc;
 
 
+import static io.opentracing.contrib.jdbc.TestUtil.checkSameTrace;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import io.opentracing.ActiveSpan;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
@@ -34,7 +36,7 @@ public class SpringTest {
   }
 
   @Test
-  public void test() throws SQLException {
+  public void spring() throws SQLException {
     BasicDataSource dataSource = getDataSource();
 
     JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
@@ -54,6 +56,24 @@ public class SpringTest {
     assertEquals(0, mockSpan.generatedErrors().size());
 
     assertNull(mockTracer.activeSpan());
+  }
+
+  @Test
+  public void spring_with_parent() throws Exception {
+    try (ActiveSpan activeSpan = mockTracer.buildSpan("parent").startActive()) {
+      BasicDataSource dataSource = getDataSource();
+
+      JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+      jdbcTemplate.execute("CREATE TABLE with_parent_1 (id INTEGER)");
+      jdbcTemplate.execute("CREATE TABLE with_parent_2 (id INTEGER)");
+
+      dataSource.close();
+    }
+
+    List<MockSpan> spans = mockTracer.finishedSpans();
+    assertEquals(3, spans.size());
+
+    checkSameTrace(spans);
   }
 
   private BasicDataSource getDataSource() {

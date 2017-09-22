@@ -1,10 +1,12 @@
 package io.opentracing.contrib.jdbc;
 
 
+import static io.opentracing.contrib.jdbc.TestUtil.checkSameTrace;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import io.opentracing.ActiveSpan;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
@@ -65,6 +67,28 @@ public class HibernateTest {
   }
 
   @Test
+  public void jpa_with_parent() {
+
+    try (ActiveSpan activeSpan = mockTracer.buildSpan("parent").startActive()) {
+      EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("jpa");
+
+      EntityManager entityManager = entityManagerFactory.createEntityManager();
+
+      entityManager.getTransaction().begin();
+      entityManager.persist(new Employee());
+      entityManager.persist(new Employee());
+      entityManager.getTransaction().commit();
+      entityManager.close();
+      entityManagerFactory.close();
+    }
+
+    List<MockSpan> spans = mockTracer.finishedSpans();
+    assertEquals(11, spans.size());
+    checkSameTrace(spans);
+    assertNull(mockTracer.activeSpan());
+  }
+
+  @Test
   public void hibernate() throws InterruptedException {
     SessionFactory sessionFactory = createSessionFactory();
     Session session = sessionFactory.openSession();
@@ -82,6 +106,26 @@ public class HibernateTest {
     assertEquals(8, finishedSpans.size());
 
     checkSpans(finishedSpans);
+    assertNull(mockTracer.activeSpan());
+  }
+
+  @Test
+  public void hibernate_with_parent() {
+    try (ActiveSpan activeSpan = mockTracer.buildSpan("parent").startActive()) {
+      SessionFactory sessionFactory = createSessionFactory();
+      Session session = sessionFactory.openSession();
+
+      session.beginTransaction();
+      session.save(new Employee());
+      session.save(new Employee());
+      session.getTransaction().commit();
+      session.close();
+      sessionFactory.close();
+    }
+
+    List<MockSpan> spans = mockTracer.finishedSpans();
+    assertEquals(11, spans.size());
+    checkSameTrace(spans);
     assertNull(mockTracer.activeSpan());
   }
 
