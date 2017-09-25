@@ -72,7 +72,7 @@ public class SpringTest {
   }
 
   @Test
-  public void spring_skip_new_spans() throws Exception {
+  public void spring_active_span_only() throws Exception {
     BasicDataSource dataSource = getDataSource(true);
 
     JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
@@ -103,7 +103,7 @@ public class SpringTest {
   }
 
   @Test
-  public void spring_with_parent_skip_new_spans() throws Exception {
+  public void spring_with_parent_and_active_span_only() throws Exception {
     try (ActiveSpan activeSpan = mockTracer.buildSpan("parent").startActive()) {
       BasicDataSource dataSource = getDataSource(true);
 
