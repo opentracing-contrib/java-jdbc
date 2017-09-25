@@ -30,6 +30,10 @@ public class TracingDriver implements Driver {
 
   private static final Driver INSTANCE = new TracingDriver();
 
+  private static final String TRACE_WITH_ACTIVE_SPAN_ONLY = "traceWithActiveSpanOnly";
+
+  private static final String WITH_ACTIVE_SPAN_ONLY = TRACE_WITH_ACTIVE_SPAN_ONLY + "=true";
+
   static {
     try {
       DriverManager.registerDriver(INSTANCE);
@@ -57,7 +61,7 @@ public class TracingDriver implements Driver {
     Driver wrappedDriver = findDriver(realUrl);
     Connection connection = wrappedDriver.connect(realUrl, info);
 
-    return new TracingConnection(connection, dbType, dbUser);
+    return new TracingConnection(connection, dbType, dbUser, url.contains(WITH_ACTIVE_SPAN_ONLY));
   }
 
   @Override
@@ -122,7 +126,9 @@ public class TracingDriver implements Driver {
   }
 
   private String extractRealUrl(String url) {
-    return url.startsWith("jdbc:tracing:") ? url.replace("tracing:", "") : url;
+    String extracted = url.startsWith("jdbc:tracing:") ? url.replace("tracing:", "") : url;
+    return extracted.replaceAll(TRACE_WITH_ACTIVE_SPAN_ONLY + "=(true|false)[;]*", "")
+        .replaceAll("\\?$", "");
   }
 
   private String extractDbType(String realUrl) {

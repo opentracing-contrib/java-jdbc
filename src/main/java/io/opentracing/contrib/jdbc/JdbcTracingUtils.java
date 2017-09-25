@@ -14,6 +14,7 @@
 package io.opentracing.contrib.jdbc;
 
 import io.opentracing.ActiveSpan;
+import io.opentracing.NoopActiveSpanSource.NoopActiveSpan;
 import io.opentracing.Tracer;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -23,7 +24,12 @@ class JdbcTracingUtils {
 
   static final String COMPONENT_NAME = "java-jdbc";
 
-  static ActiveSpan buildSpan(String operationName, String sql, String dbType, String dbUser) {
+  static ActiveSpan buildSpan(String operationName, String sql, String dbType, String dbUser,
+      boolean withActiveSpanOnly) {
+    if (withActiveSpanOnly && GlobalTracer.get().activeSpan() == null) {
+      return NoopActiveSpan.INSTANCE;
+    }
+
     Tracer.SpanBuilder spanBuilder = GlobalTracer.get().buildSpan(operationName)
         .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT);
 
