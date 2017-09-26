@@ -80,6 +80,27 @@ public class HibernateTest {
   }
 
   @Test
+  public void jpa_with_active_span_only() {
+    EntityManagerFactory entityManagerFactory = Persistence
+        .createEntityManagerFactory("jpa_active_span_only");
+
+    Employee employee = new Employee();
+    EntityManager entityManager = entityManagerFactory.createEntityManager();
+    entityManager.getTransaction().begin();
+    entityManager.persist(employee);
+    entityManager.getTransaction().commit();
+    entityManager.close();
+    entityManagerFactory.close();
+
+    assertNotNull(employee.id);
+
+    List<MockSpan> finishedSpans = mockTracer.finishedSpans();
+    assertEquals(0, finishedSpans.size());
+
+    assertNull(mockTracer.activeSpan());
+  }
+
+  @Test
   public void jpa_with_parent() {
 
     try (ActiveSpan activeSpan = mockTracer.buildSpan("parent").startActive()) {
@@ -102,8 +123,31 @@ public class HibernateTest {
   }
 
   @Test
+  public void jpa_with_parent_and_active_span_only() {
+
+    try (ActiveSpan activeSpan = mockTracer.buildSpan("parent").startActive()) {
+      EntityManagerFactory entityManagerFactory = Persistence
+          .createEntityManagerFactory("jpa_active_span_only");
+
+      EntityManager entityManager = entityManagerFactory.createEntityManager();
+
+      entityManager.getTransaction().begin();
+      entityManager.persist(new Employee());
+      entityManager.persist(new Employee());
+      entityManager.getTransaction().commit();
+      entityManager.close();
+      entityManagerFactory.close();
+    }
+
+    List<MockSpan> spans = mockTracer.finishedSpans();
+    assertEquals(11, spans.size());
+    checkSameTrace(spans);
+    assertNull(mockTracer.activeSpan());
+  }
+
+  @Test
   public void hibernate() throws InterruptedException {
-    SessionFactory sessionFactory = createSessionFactory();
+    SessionFactory sessionFactory = createSessionFactory(false);
     Session session = sessionFactory.openSession();
 
     Employee employee = new Employee();
@@ -123,9 +167,49 @@ public class HibernateTest {
   }
 
   @Test
+  public void hibernate_with_active_span_only() throws InterruptedException {
+    SessionFactory sessionFactory = createSessionFactory(true);
+    Session session = sessionFactory.openSession();
+
+    Employee employee = new Employee();
+    session.beginTransaction();
+    session.save(employee);
+    session.getTransaction().commit();
+    session.close();
+    sessionFactory.close();
+
+    assertNotNull(employee.id);
+
+    List<MockSpan> finishedSpans = mockTracer.finishedSpans();
+    assertEquals(0, finishedSpans.size());
+
+    assertNull(mockTracer.activeSpan());
+  }
+
+  @Test
   public void hibernate_with_parent() {
     try (ActiveSpan activeSpan = mockTracer.buildSpan("parent").startActive()) {
-      SessionFactory sessionFactory = createSessionFactory();
+      SessionFactory sessionFactory = createSessionFactory(false);
+      Session session = sessionFactory.openSession();
+
+      session.beginTransaction();
+      session.save(new Employee());
+      session.save(new Employee());
+      session.getTransaction().commit();
+      session.close();
+      sessionFactory.close();
+    }
+
+    List<MockSpan> spans = mockTracer.finishedSpans();
+    assertEquals(11, spans.size());
+    checkSameTrace(spans);
+    assertNull(mockTracer.activeSpan());
+  }
+
+  @Test
+  public void hibernate_with_parent_and_active_span_only() {
+    try (ActiveSpan activeSpan = mockTracer.buildSpan("parent").startActive()) {
+      SessionFactory sessionFactory = createSessionFactory(true);
       Session session = sessionFactory.openSession();
 
       session.beginTransaction();
@@ -153,12 +237,13 @@ public class HibernateTest {
     }
   }
 
-  private SessionFactory createSessionFactory() {
+  private SessionFactory createSessionFactory(boolean traceWithActiveSpanOnly) {
     Configuration configuration = new Configuration();
     configuration.addAnnotatedClass(Employee.class);
     configuration.setProperty("hibernate.connection.driver_class",
         "io.opentracing.contrib.jdbc.TracingDriver");
-    configuration.setProperty("hibernate.connection.url", "jdbc:tracing:h2:mem:hibernate");
+    configuration.setProperty("hibernate.connection.url",
+        "jdbc:tracing:h2:mem:hibernate?traceWithActiveSpanOnly=" + traceWithActiveSpanOnly);
     configuration.setProperty("hibernate.connection.username", "sa");
     configuration.setProperty("hibernate.connection.password", "");
     configuration.setProperty("hibernate.dialect", "org.hibernate.dialect.H2Dialect");

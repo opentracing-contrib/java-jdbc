@@ -50,7 +50,7 @@ public class SpringTest {
 
   @Test
   public void spring() throws SQLException {
-    BasicDataSource dataSource = getDataSource();
+    BasicDataSource dataSource = getDataSource(false);
 
     JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
     jdbcTemplate.execute("CREATE TABLE employee (id INTEGER)");
@@ -72,9 +72,22 @@ public class SpringTest {
   }
 
   @Test
+  public void spring_active_span_only() throws Exception {
+    BasicDataSource dataSource = getDataSource(true);
+
+    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+    jdbcTemplate.execute("CREATE TABLE skip_new_spans (id INTEGER)");
+
+    dataSource.close();
+
+    List<MockSpan> finishedSpans = mockTracer.finishedSpans();
+    assertEquals(0, finishedSpans.size());
+  }
+
+  @Test
   public void spring_with_parent() throws Exception {
     try (ActiveSpan activeSpan = mockTracer.buildSpan("parent").startActive()) {
-      BasicDataSource dataSource = getDataSource();
+      BasicDataSource dataSource = getDataSource(false);
 
       JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
       jdbcTemplate.execute("CREATE TABLE with_parent_1 (id INTEGER)");
@@ -89,10 +102,29 @@ public class SpringTest {
     checkSameTrace(spans);
   }
 
-  private BasicDataSource getDataSource() {
+  @Test
+  public void spring_with_parent_and_active_span_only() throws Exception {
+    try (ActiveSpan activeSpan = mockTracer.buildSpan("parent").startActive()) {
+      BasicDataSource dataSource = getDataSource(true);
+
+      JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+      jdbcTemplate.execute("CREATE TABLE with_parent_skip_1 (id INTEGER)");
+      jdbcTemplate.execute("CREATE TABLE with_parent_skip_2 (id INTEGER)");
+
+      dataSource.close();
+    }
+
+    List<MockSpan> spans = mockTracer.finishedSpans();
+    assertEquals(3, spans.size());
+
+    checkSameTrace(spans);
+  }
+
+  private BasicDataSource getDataSource(boolean traceWithActiveSpanOnly) {
     BasicDataSource dataSource = new BasicDataSource();
     dataSource.setDriverClassName("io.opentracing.contrib.jdbc.TracingDriver");
-    dataSource.setUrl("jdbc:tracing:h2:mem:spring");
+    dataSource
+        .setUrl("jdbc:tracing:h2:mem:spring?traceWithActiveSpanOnly=" + traceWithActiveSpanOnly);
     dataSource.setUsername("sa");
     dataSource.setPassword("");
     return dataSource;

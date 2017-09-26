@@ -16,7 +16,9 @@ pom.xml
 
 ## Usage
 
-1. Add _tracing_ to jdbc url. E.g. jdbc:tracing:h2:mem:test
+1. Add _tracing_ to jdbc url. E.g. _jdbc:tracing:h2:mem:test_  
+To trace calls only if there is an active Span use property `traceWithActiveSpanOnly=true`.  
+E.g. _jdbc:tracing:h2:mem:test?traceWithActiveSpanOnly=true_
 
 2. Set driver class to `io.opentracing.contrib.jdbc.TracingDriver`
 

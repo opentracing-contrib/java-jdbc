@@ -44,26 +44,28 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
   private final String query;
   private final String dbType;
   private final String dbUser;
+  private final boolean withActiveSpanOnly;
 
   public TracingPreparedStatement(PreparedStatement preparedStatement, String query, String dbType,
-      String dbUser) {
-    super(preparedStatement, dbType, dbUser);
+      String dbUser, boolean withActiveSpanOnly) {
+    super(preparedStatement, dbType, dbUser, withActiveSpanOnly);
     this.preparedStatement = preparedStatement;
     this.query = query;
     this.dbType = dbType;
     this.dbUser = dbUser;
+    this.withActiveSpanOnly = withActiveSpanOnly;
   }
 
   @Override
   public ResultSet executeQuery() throws SQLException {
-    try (ActiveSpan ignored = buildSpan("Query", query, dbType, dbUser)) {
+    try (ActiveSpan ignored = buildSpan("Query", query, dbType, dbUser, withActiveSpanOnly)) {
       return preparedStatement.executeQuery();
     }
   }
 
   @Override
   public int executeUpdate() throws SQLException {
-    try (ActiveSpan ignored = buildSpan("Update", query, dbType, dbUser)) {
+    try (ActiveSpan ignored = buildSpan("Update", query, dbType, dbUser, withActiveSpanOnly)) {
       return preparedStatement.executeUpdate();
     }
   }
@@ -171,7 +173,7 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
 
   @Override
   public boolean execute() throws SQLException {
-    try (ActiveSpan ignored = buildSpan("Execute", query, dbType, dbUser)) {
+    try (ActiveSpan ignored = buildSpan("Execute", query, dbType, dbUser, withActiveSpanOnly)) {
       return preparedStatement.execute();
     }
   }
