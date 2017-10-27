@@ -23,18 +23,24 @@ import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.List;
 
 public class TracingStatement implements Statement {
 
   private final Statement statement;
+  private final String query;
   private final ArrayList<String> batchCommands = new ArrayList<>();
   private final String dbType;
   private final String dbUser;
   private final boolean withActiveSpanOnly;
 
   TracingStatement(Statement statement, String dbType, String dbUser, boolean withActiveSpanOnly) {
+    this(statement, null, dbType, dbUser, withActiveSpanOnly);
+  }
+
+  TracingStatement(Statement statement, String query, String dbType, String dbUser,
+      boolean withActiveSpanOnly) {
     this.statement = statement;
+    this.query = query;
     this.dbType = dbType;
     this.dbUser = dbUser;
     this.withActiveSpanOnly = withActiveSpanOnly;
@@ -180,7 +186,7 @@ public class TracingStatement implements Statement {
 
   @Override
   public int[] executeBatch() throws SQLException {
-    try (ActiveSpan ignored = buildSpanForBatch(batchCommands, dbType, dbUser)) {
+    try (ActiveSpan ignored = buildSpanForBatch()) {
       return statement.executeBatch();
     }
   }
@@ -282,12 +288,16 @@ public class TracingStatement implements Statement {
     return statement.isWrapperFor(iface);
   }
 
-  private ActiveSpan buildSpanForBatch(List<String> batchCommands, String dbType, String dbUser) {
-    StringBuilder sql = new StringBuilder();
-    for (String batchCommand : batchCommands) {
-      sql.append(batchCommand);
+  private ActiveSpan buildSpanForBatch() {
+    StringBuilder sqlBuilder = new StringBuilder();
+    if (query != null) {
+      sqlBuilder.append(query);
     }
 
-    return buildSpan("Batch", sql.toString(), dbType, dbUser, withActiveSpanOnly);
+    for (String batchCommand : batchCommands) {
+      sqlBuilder.append(batchCommand);
+    }
+
+    return buildSpan("Batch", sqlBuilder.toString(), dbType, dbUser, withActiveSpanOnly);
   }
 }

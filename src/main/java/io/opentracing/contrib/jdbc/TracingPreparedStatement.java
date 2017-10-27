@@ -48,7 +48,7 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
 
   public TracingPreparedStatement(PreparedStatement preparedStatement, String query, String dbType,
       String dbUser, boolean withActiveSpanOnly) {
-    super(preparedStatement, dbType, dbUser, withActiveSpanOnly);
+    super(preparedStatement, query, dbType, dbUser, withActiveSpanOnly);
     this.preparedStatement = preparedStatement;
     this.query = query;
     this.dbType = dbType;
