@@ -15,8 +15,8 @@ package io.opentracing.contrib.jdbc;
 
 
 import static io.opentracing.contrib.jdbc.TestUtil.checkSameTrace;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
 import io.opentracing.ActiveSpan;
@@ -25,12 +25,15 @@ import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import io.opentracing.util.ThreadLocalActiveSpanSource;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.List;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.springframework.jdbc.core.BatchPreparedStatementSetter;
 import org.springframework.jdbc.core.JdbcTemplate;
 
 public class SpringTest {
@@ -49,6 +52,45 @@ public class SpringTest {
   }
 
   @Test
+  public void batch() throws SQLException {
+    BasicDataSource dataSource = getDataSource(false);
+
+    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+    jdbcTemplate.execute("CREATE TABLE batch (id INTEGER)");
+
+    final List<Integer> ids = Arrays.asList(1, 2, 3, 4, 5);
+    jdbcTemplate.batchUpdate("INSERT INTO batch (id) VALUES (?)",
+        new BatchPreparedStatementSetter() {
+          @Override
+          public void setValues(PreparedStatement preparedStatement, int i) throws SQLException {
+            preparedStatement.setInt(1, ids.get(i));
+          }
+
+          @Override
+          public int getBatchSize() {
+            return ids.size();
+          }
+        }
+    );
+
+    dataSource.close();
+
+    List<MockSpan> spans = mockTracer.finishedSpans();
+    assertEquals(2, spans.size());
+
+    for (MockSpan span : spans) {
+      assertEquals(Tags.SPAN_KIND_CLIENT, span.tags().get(Tags.SPAN_KIND.getKey()));
+      assertEquals(JdbcTracingUtils.COMPONENT_NAME, span.tags().get(Tags.COMPONENT.getKey()));
+      assertThat(span.tags().get(Tags.DB_STATEMENT.getKey()).toString()).isNotEmpty();
+      assertEquals("h2", span.tags().get(Tags.DB_TYPE.getKey()));
+      assertEquals("sa", span.tags().get(Tags.DB_USER.getKey()));
+      assertEquals(0, span.generatedErrors().size());
+    }
+
+    assertNull(mockTracer.activeSpan());
+  }
+
+  @Test
   public void spring() throws SQLException {
     BasicDataSource dataSource = getDataSource(false);
 
@@ -63,7 +105,7 @@ public class SpringTest {
 
     assertEquals(Tags.SPAN_KIND_CLIENT, mockSpan.tags().get(Tags.SPAN_KIND.getKey()));
     assertEquals(JdbcTracingUtils.COMPONENT_NAME, mockSpan.tags().get(Tags.COMPONENT.getKey()));
-    assertNotNull(mockSpan.tags().get(Tags.DB_STATEMENT.getKey()));
+    assertThat(mockSpan.tags().get(Tags.DB_STATEMENT.getKey()).toString()).isNotEmpty();
     assertEquals("h2", mockSpan.tags().get(Tags.DB_TYPE.getKey()));
     assertEquals("sa", mockSpan.tags().get(Tags.DB_USER.getKey()));
     assertEquals(0, mockSpan.generatedErrors().size());
