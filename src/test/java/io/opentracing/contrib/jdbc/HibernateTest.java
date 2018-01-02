@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 The OpenTracing Authors
+ * Copyright 2017-2018 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -19,12 +19,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-import io.opentracing.ActiveSpan;
+import io.opentracing.Scope;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
-import io.opentracing.util.GlobalTracer;
-import io.opentracing.util.ThreadLocalActiveSpanSource;
+import io.opentracing.util.GlobalTracerTestUtil;
+import io.opentracing.util.ThreadLocalScopeManager;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -45,16 +45,16 @@ import org.junit.Test;
 
 public class HibernateTest {
 
-  private static final MockTracer mockTracer = new MockTracer(new ThreadLocalActiveSpanSource(),
+  private static final MockTracer mockTracer = new MockTracer(new ThreadLocalScopeManager(),
       MockTracer.Propagator.TEXT_MAP);
 
   @BeforeClass
   public static void init() {
-    GlobalTracer.register(mockTracer);
+    GlobalTracerTestUtil.setGlobalTracerUnconditionally(mockTracer);
   }
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     mockTracer.reset();
   }
 
@@ -103,7 +103,7 @@ public class HibernateTest {
   @Test
   public void jpa_with_parent() {
 
-    try (ActiveSpan activeSpan = mockTracer.buildSpan("parent").startActive()) {
+    try (Scope ignored = mockTracer.buildSpan("parent").startActive(true)) {
       EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("jpa");
 
       EntityManager entityManager = entityManagerFactory.createEntityManager();
@@ -125,7 +125,7 @@ public class HibernateTest {
   @Test
   public void jpa_with_parent_and_active_span_only() {
 
-    try (ActiveSpan activeSpan = mockTracer.buildSpan("parent").startActive()) {
+    try (Scope ignored = mockTracer.buildSpan("parent").startActive(true)) {
       EntityManagerFactory entityManagerFactory = Persistence
           .createEntityManagerFactory("jpa_active_span_only");
 
@@ -146,7 +146,7 @@ public class HibernateTest {
   }
 
   @Test
-  public void hibernate() throws InterruptedException {
+  public void hibernate() {
     SessionFactory sessionFactory = createSessionFactory(false);
     Session session = sessionFactory.openSession();
 
@@ -167,7 +167,7 @@ public class HibernateTest {
   }
 
   @Test
-  public void hibernate_with_active_span_only() throws InterruptedException {
+  public void hibernate_with_active_span_only() {
     SessionFactory sessionFactory = createSessionFactory(true);
     Session session = sessionFactory.openSession();
 
@@ -188,7 +188,7 @@ public class HibernateTest {
 
   @Test
   public void hibernate_with_parent() {
-    try (ActiveSpan activeSpan = mockTracer.buildSpan("parent").startActive()) {
+    try (Scope ignored = mockTracer.buildSpan("parent").startActive(true)) {
       SessionFactory sessionFactory = createSessionFactory(false);
       Session session = sessionFactory.openSession();
 
@@ -208,7 +208,7 @@ public class HibernateTest {
 
   @Test
   public void hibernate_with_parent_and_active_span_only() {
-    try (ActiveSpan activeSpan = mockTracer.buildSpan("parent").startActive()) {
+    try (Scope ignored = mockTracer.buildSpan("parent").startActive(true)) {
       SessionFactory sessionFactory = createSessionFactory(true);
       Session session = sessionFactory.openSession();
 
@@ -253,14 +253,13 @@ public class HibernateTest {
 
     StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder()
         .applySettings(configuration.getProperties());
-    SessionFactory sessionFactory = configuration.buildSessionFactory(builder.build());
-    return sessionFactory;
+    return configuration.buildSessionFactory(builder.build());
   }
 
 
   @Entity
   @Table(name = "Employee")
-  public static class Employee {
+  private static class Employee {
 
     @Id
     @Column(name = "id")

@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 The OpenTracing Authors
+ * Copyright 2017-2018 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -14,9 +14,9 @@
 package io.opentracing.contrib.jdbc;
 
 
-import static io.opentracing.contrib.jdbc.JdbcTracingUtils.buildSpan;
+import static io.opentracing.contrib.jdbc.JdbcTracingUtils.buildScope;
 
-import io.opentracing.ActiveSpan;
+import io.opentracing.Scope;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -58,14 +58,14 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
 
   @Override
   public ResultSet executeQuery() throws SQLException {
-    try (ActiveSpan ignored = buildSpan("Query", query, dbType, dbUser, withActiveSpanOnly)) {
+    try (Scope ignored = buildScope("Query", query, dbType, dbUser, withActiveSpanOnly)) {
       return preparedStatement.executeQuery();
     }
   }
 
   @Override
   public int executeUpdate() throws SQLException {
-    try (ActiveSpan ignored = buildSpan("Update", query, dbType, dbUser, withActiveSpanOnly)) {
+    try (Scope ignored = buildScope("Update", query, dbType, dbUser, withActiveSpanOnly)) {
       return preparedStatement.executeUpdate();
     }
   }
@@ -173,7 +173,7 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
 
   @Override
   public boolean execute() throws SQLException {
-    try (ActiveSpan ignored = buildSpan("Execute", query, dbType, dbUser, withActiveSpanOnly)) {
+    try (Scope ignored = buildScope("Execute", query, dbType, dbUser, withActiveSpanOnly)) {
       return preparedStatement.execute();
     }
   }
