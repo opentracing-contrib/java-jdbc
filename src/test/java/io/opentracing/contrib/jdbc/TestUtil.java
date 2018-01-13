@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 The OpenTracing Authors
+ * Copyright 2017-2018 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -18,9 +18,9 @@ import static org.junit.Assert.assertEquals;
 import io.opentracing.mock.MockSpan;
 import java.util.List;
 
-public class TestUtil {
+class TestUtil {
 
-  public static void checkSameTrace(List<MockSpan> spans) {
+  static void checkSameTrace(List<MockSpan> spans) {
     for (int i = 0; i < spans.size() - 1; i++) {
       assertEquals(spans.get(i).context().traceId(), spans.get(i + 1).context().traceId());
       assertEquals(spans.get(spans.size() - 1).context().spanId(), spans.get(i).parentId());

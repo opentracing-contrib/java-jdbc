@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 The OpenTracing Authors
+ * Copyright 2017-2018 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -13,9 +13,10 @@
  */
 package io.opentracing.contrib.jdbc;
 
-import io.opentracing.ActiveSpan;
-import io.opentracing.NoopActiveSpanSource.NoopActiveSpan;
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.Tracer;
+import io.opentracing.noop.NoopScopeManager.NoopScope;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 
@@ -24,22 +25,22 @@ class JdbcTracingUtils {
 
   static final String COMPONENT_NAME = "java-jdbc";
 
-  static ActiveSpan buildSpan(String operationName, String sql, String dbType, String dbUser,
+  static Scope buildScope(String operationName, String sql, String dbType, String dbUser,
       boolean withActiveSpanOnly) {
     if (withActiveSpanOnly && GlobalTracer.get().activeSpan() == null) {
-      return NoopActiveSpan.INSTANCE;
+      return NoopScope.INSTANCE;
     }
 
     Tracer.SpanBuilder spanBuilder = GlobalTracer.get().buildSpan(operationName)
         .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT);
 
-    ActiveSpan span = spanBuilder.startActive();
-    decorate(span, sql, dbType, dbUser);
+    Scope scope = spanBuilder.startActive(true);
+    decorate(scope.span(), sql, dbType, dbUser);
 
-    return span;
+    return scope;
   }
 
-  private static void decorate(ActiveSpan span, String sql, String dbType, String dbUser) {
+  private static void decorate(Span span, String sql, String dbType, String dbUser) {
     Tags.COMPONENT.set(span, COMPONENT_NAME);
     Tags.DB_STATEMENT.set(span, sql);
     Tags.DB_TYPE.set(span, dbType);

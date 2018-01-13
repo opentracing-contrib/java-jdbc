@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 The OpenTracing Authors
+ * Copyright 2017-2018 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -19,12 +19,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-import io.opentracing.ActiveSpan;
+import io.opentracing.Scope;
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
-import io.opentracing.util.GlobalTracer;
-import io.opentracing.util.ThreadLocalActiveSpanSource;
+import io.opentracing.util.GlobalTracerTestUtil;
+import io.opentracing.util.ThreadLocalScopeManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -38,16 +38,16 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 public class SpringTest {
 
-  private static final MockTracer mockTracer = new MockTracer(new ThreadLocalActiveSpanSource(),
+  private static final MockTracer mockTracer = new MockTracer(new ThreadLocalScopeManager(),
       MockTracer.Propagator.TEXT_MAP);
 
   @BeforeClass
   public static void init() {
-    GlobalTracer.register(mockTracer);
+    GlobalTracerTestUtil.setGlobalTracerUnconditionally(mockTracer);
   }
 
   @Before
-  public void before() throws Exception {
+  public void before() {
     mockTracer.reset();
   }
 
@@ -128,7 +128,7 @@ public class SpringTest {
 
   @Test
   public void spring_with_parent() throws Exception {
-    try (ActiveSpan activeSpan = mockTracer.buildSpan("parent").startActive()) {
+    try (Scope ignored = mockTracer.buildSpan("parent").startActive(true)) {
       BasicDataSource dataSource = getDataSource(false);
 
       JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
@@ -146,7 +146,7 @@ public class SpringTest {
 
   @Test
   public void spring_with_parent_and_active_span_only() throws Exception {
-    try (ActiveSpan activeSpan = mockTracer.buildSpan("parent").startActive()) {
+    try (Scope ignored = mockTracer.buildSpan("parent").startActive(true)) {
       BasicDataSource dataSource = getDataSource(true);
 
       JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
