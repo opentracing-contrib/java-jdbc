@@ -58,7 +58,7 @@ public class TracingDriver implements Driver {
     String dbUser = info.getProperty("user");
 
     // find the real driver for the URL
-    Driver wrappedDriver = findDriver(realUrl);
+    Driver wrappedDriver = findDriver(url);
     Connection connection = wrappedDriver.connect(realUrl, info);
 
     return new TracingConnection(connection, dbType, dbUser, url.contains(WITH_ACTIVE_SPAN_ONLY));
