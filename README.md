@@ -10,7 +10,7 @@ pom.xml
 <dependency>
     <groupId>io.opentracing.contrib</groupId>
     <artifactId>opentracing-jdbc</artifactId>
-    <version>0.0.6</version>
+    <version>VERSION</version>
 </dependency>
 ```
 
@@ -73,4 +73,4 @@ For dbcp2:
 [ci-img]: https://travis-ci.org/opentracing-contrib/java-jdbc.svg?branch=master
 [ci]: https://travis-ci.org/opentracing-contrib/java-jdbc
 [maven-img]: https://img.shields.io/maven-central/v/io.opentracing.contrib/opentracing-jdbc.svg
-[maven]: http://search.maven.org/#search%7Cga%7C1%7Copentracing-jdbc
+[maven]: http://search.maven.org/#search%7Cga%7C1%7Cio.opentracing.contrib%20opentracing-jdbc
