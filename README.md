@@ -70,6 +70,10 @@ For dbcp2:
 
 ```
 
+## License
+
+[Apache 2.0 License](./LICENSE).
+
 [ci-img]: https://travis-ci.org/opentracing-contrib/java-jdbc.svg?branch=master
 [ci]: https://travis-ci.org/opentracing-contrib/java-jdbc
 [maven-img]: https://img.shields.io/maven-central/v/io.opentracing.contrib/opentracing-jdbc.svg
