@@ -73,7 +73,7 @@ For dbcp2:
 ## Troubleshooting
 In case of _Unable to find a driver_ error the database driver should be registered before configuring 
 the datasource.     
-E.g. `Class.forName("com.mysql.jdbc.Driver");
+E.g. `Class.forName("com.mysql.jdbc.Driver")`;
 
 ## License
 
