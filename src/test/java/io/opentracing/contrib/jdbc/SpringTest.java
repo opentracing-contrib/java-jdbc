@@ -27,8 +27,12 @@ import io.opentracing.util.GlobalTracerTestUtil;
 import io.opentracing.util.ThreadLocalScopeManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -162,11 +166,37 @@ public class SpringTest {
     checkSameTrace(spans);
   }
 
+  @Test
+  public void spring_with_ignored_statement() throws Exception {
+    BasicDataSource dataSource = getDataSource(false, Arrays.asList(
+            "CREATE TABLE ignored (id INTEGER, TEST VARCHAR)",
+            "INSERT INTO ignored (id, \\\"TEST\\\") VALUES (1, 'value')"
+    ));
+
+    JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
+    jdbcTemplate.execute("CREATE TABLE ignored (id INTEGER, TEST VARCHAR)");
+    jdbcTemplate.execute("INSERT INTO ignored (id, \"TEST\") VALUES (1, 'value')");
+    jdbcTemplate.execute("CREATE TABLE not_ignored (id INTEGER)");
+
+    dataSource.close();
+
+    List<MockSpan> finishedSpans = mockTracer.finishedSpans();
+    assertEquals(1, finishedSpans.size());
+  }
+
   private BasicDataSource getDataSource(boolean traceWithActiveSpanOnly) {
+    return getDataSource(traceWithActiveSpanOnly, new ArrayList<String>());
+  }
+
+  private BasicDataSource getDataSource(boolean traceWithActiveSpanOnly, List<String> ignored) {
+
+    String ignoreForTracing = TestUtil.buildIgnoredString(ignored);
+
     BasicDataSource dataSource = new BasicDataSource();
     dataSource.setDriverClassName("io.opentracing.contrib.jdbc.TracingDriver");
     dataSource
-        .setUrl("jdbc:tracing:h2:mem:spring?traceWithActiveSpanOnly=" + traceWithActiveSpanOnly);
+        .setUrl("jdbc:tracing:h2:mem:spring?" + ignoreForTracing +
+                "traceWithActiveSpanOnly=" + traceWithActiveSpanOnly);
     dataSource.setUsername("sa");
     dataSource.setPassword("");
     return dataSource;

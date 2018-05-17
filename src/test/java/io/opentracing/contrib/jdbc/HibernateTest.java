@@ -25,6 +25,8 @@ import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracerTestUtil;
 import io.opentracing.util.ThreadLocalScopeManager;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -226,6 +228,27 @@ public class HibernateTest {
     assertNull(mockTracer.activeSpan());
   }
 
+  @Test
+  public void hibernate_with_ignored_statement() {
+    SessionFactory sessionFactory = createSessionFactory(false, Arrays.asList("insert into Employee (id) values (?)"));
+    Session session = sessionFactory.openSession();
+
+    Employee employee = new Employee();
+    session.beginTransaction();
+    session.save(employee);
+    session.getTransaction().commit();
+    session.close();
+    sessionFactory.close();
+
+    assertNotNull(employee.id);
+
+    List<MockSpan> finishedSpans = mockTracer.finishedSpans();
+    assertEquals(7, finishedSpans.size());
+
+    checkSpans(finishedSpans);
+    assertNull(mockTracer.activeSpan());
+  }
+
   private void checkSpans(List<MockSpan> mockSpans) {
     for (MockSpan mockSpan : mockSpans) {
       assertEquals(Tags.SPAN_KIND_CLIENT, mockSpan.tags().get(Tags.SPAN_KIND.getKey()));
@@ -238,12 +261,17 @@ public class HibernateTest {
   }
 
   private SessionFactory createSessionFactory(boolean traceWithActiveSpanOnly) {
+    return createSessionFactory(traceWithActiveSpanOnly, new ArrayList<String>());
+  }
+
+  private SessionFactory createSessionFactory(boolean traceWithActiveSpanOnly, List<String> ignored) {
+    String ignoredForTrace = TestUtil.buildIgnoredString(ignored);
     Configuration configuration = new Configuration();
     configuration.addAnnotatedClass(Employee.class);
     configuration.setProperty("hibernate.connection.driver_class",
         "io.opentracing.contrib.jdbc.TracingDriver");
     configuration.setProperty("hibernate.connection.url",
-        "jdbc:tracing:h2:mem:hibernate?traceWithActiveSpanOnly=" + traceWithActiveSpanOnly);
+        "jdbc:tracing:h2:mem:hibernate?" + ignoredForTrace + "traceWithActiveSpanOnly=" + traceWithActiveSpanOnly);
     configuration.setProperty("hibernate.connection.username", "sa");
     configuration.setProperty("hibernate.connection.password", "");
     configuration.setProperty("hibernate.dialect", "org.hibernate.dialect.H2Dialect");

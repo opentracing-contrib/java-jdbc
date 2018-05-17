@@ -20,11 +20,10 @@ import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
-import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class TracingDriver implements Driver {
 
@@ -33,6 +32,7 @@ public class TracingDriver implements Driver {
   private static final String TRACE_WITH_ACTIVE_SPAN_ONLY = "traceWithActiveSpanOnly";
 
   private static final String WITH_ACTIVE_SPAN_ONLY = TRACE_WITH_ACTIVE_SPAN_ONLY + "=true";
+  public static final String IGNORE_FOR_TRACING_REGEX = "ignoreForTracing=\"((?:\\\\\"|[^\"])*)\"[;]*";
 
   static {
     try {
@@ -61,7 +61,8 @@ public class TracingDriver implements Driver {
     Driver wrappedDriver = findDriver(realUrl);
     Connection connection = wrappedDriver.connect(realUrl, info);
 
-    return new TracingConnection(connection, dbType, dbUser, url.contains(WITH_ACTIVE_SPAN_ONLY));
+    return new TracingConnection(connection, dbType, dbUser, url.contains(WITH_ACTIVE_SPAN_ONLY),
+            extractIgnoredStatements(url));
   }
 
   @Override
@@ -128,10 +129,28 @@ public class TracingDriver implements Driver {
   private String extractRealUrl(String url) {
     String extracted = url.startsWith("jdbc:tracing:") ? url.replace("tracing:", "") : url;
     return extracted.replaceAll(TRACE_WITH_ACTIVE_SPAN_ONLY + "=(true|false)[;]*", "")
+        .replaceAll(IGNORE_FOR_TRACING_REGEX, "")
         .replaceAll("\\?$", "");
   }
 
   private String extractDbType(String realUrl) {
     return realUrl.split(":")[1];
+  }
+
+  private Set<String> extractIgnoredStatements(String url) {
+    final String regex = IGNORE_FOR_TRACING_REGEX;
+
+    final Pattern pattern = Pattern.compile(regex);
+    final Matcher matcher = pattern.matcher(url);
+
+    Set<String> results = new HashSet<>();
+
+    while (matcher.find()) {
+      String rawValue = matcher.group(1);
+      String finalValue = rawValue.replace("\\\"", "\"");
+      results.add(finalValue);
+    }
+
+    return results;
   }
 }

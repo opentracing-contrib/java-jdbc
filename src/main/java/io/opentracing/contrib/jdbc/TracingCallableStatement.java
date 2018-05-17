@@ -31,6 +31,7 @@ import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
 import java.util.Map;
+import java.util.Set;
 
 
 public class TracingCallableStatement extends TracingPreparedStatement implements
@@ -39,8 +40,8 @@ public class TracingCallableStatement extends TracingPreparedStatement implement
   private final CallableStatement statement;
 
   public TracingCallableStatement(CallableStatement statement, String query, String dbType,
-      String dbUser, boolean withActiveSpanOnly) {
-    super(statement, query, dbType, dbUser, withActiveSpanOnly);
+      String dbUser, boolean withActiveSpanOnly, Set<String> ignoredStatements) {
+    super(statement, query, dbType, dbUser, withActiveSpanOnly, ignoredStatements);
     this.statement = statement;
   }
 
