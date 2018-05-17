@@ -16,6 +16,7 @@ package io.opentracing.contrib.jdbc;
 import static org.junit.Assert.assertEquals;
 
 import io.opentracing.mock.MockSpan;
+import java.util.Collection;
 import java.util.List;
 
 class TestUtil {
@@ -25,5 +26,15 @@ class TestUtil {
       assertEquals(spans.get(i).context().traceId(), spans.get(i + 1).context().traceId());
       assertEquals(spans.get(spans.size() - 1).context().spanId(), spans.get(i).parentId());
     }
+  }
+
+  static String buildIgnoredString(Collection<String> ignored) {
+    StringBuilder ignoreForTracing = new StringBuilder();
+    for (String query : ignored) {
+      ignoreForTracing.append("ignoreForTracing=\"");
+      ignoreForTracing.append(query.replaceAll("\"", "\\\""));
+      ignoreForTracing.append("\";");
+    }
+    return ignoreForTracing.toString();
   }
 }

@@ -19,6 +19,7 @@ import io.opentracing.Tracer;
 import io.opentracing.noop.NoopScopeManager.NoopScope;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
+import java.util.Set;
 
 
 class JdbcTracingUtils {
@@ -26,8 +27,10 @@ class JdbcTracingUtils {
   static final String COMPONENT_NAME = "java-jdbc";
 
   static Scope buildScope(String operationName, String sql, String dbType, String dbUser,
-      boolean withActiveSpanOnly) {
+      boolean withActiveSpanOnly, Set<String> ignoredStatements) {
     if (withActiveSpanOnly && GlobalTracer.get().activeSpan() == null) {
+      return NoopScope.INSTANCE;
+    } else if (ignoredStatements != null && ignoredStatements.contains(sql)) {
       return NoopScope.INSTANCE;
     }
 

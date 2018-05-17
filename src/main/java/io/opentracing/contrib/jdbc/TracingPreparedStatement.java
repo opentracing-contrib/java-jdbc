@@ -37,6 +37,7 @@ import java.sql.SQLXML;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.util.Calendar;
+import java.util.Set;
 
 public class TracingPreparedStatement extends TracingStatement implements PreparedStatement {
 
@@ -45,27 +46,29 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
   private final String dbType;
   private final String dbUser;
   private final boolean withActiveSpanOnly;
+  private final Set<String> ignoredQueries;
 
   public TracingPreparedStatement(PreparedStatement preparedStatement, String query, String dbType,
-      String dbUser, boolean withActiveSpanOnly) {
-    super(preparedStatement, query, dbType, dbUser, withActiveSpanOnly);
+     String dbUser, boolean withActiveSpanOnly, Set<String> ignoredStatements) {
+    super(preparedStatement, query, dbType, dbUser, withActiveSpanOnly, ignoredStatements);
     this.preparedStatement = preparedStatement;
     this.query = query;
     this.dbType = dbType;
     this.dbUser = dbUser;
     this.withActiveSpanOnly = withActiveSpanOnly;
+    this.ignoredQueries = ignoredStatements;
   }
 
   @Override
   public ResultSet executeQuery() throws SQLException {
-    try (Scope ignored = buildScope("Query", query, dbType, dbUser, withActiveSpanOnly)) {
+    try (Scope ignored = buildScope("Query", query, dbType, dbUser, withActiveSpanOnly, ignoredQueries)) {
       return preparedStatement.executeQuery();
     }
   }
 
   @Override
   public int executeUpdate() throws SQLException {
-    try (Scope ignored = buildScope("Update", query, dbType, dbUser, withActiveSpanOnly)) {
+    try (Scope ignored = buildScope("Update", query, dbType, dbUser, withActiveSpanOnly, ignoredQueries)) {
       return preparedStatement.executeUpdate();
     }
   }
@@ -173,7 +176,7 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
 
   @Override
   public boolean execute() throws SQLException {
-    try (Scope ignored = buildScope("Execute", query, dbType, dbUser, withActiveSpanOnly)) {
+    try (Scope ignored = buildScope("Execute", query, dbType, dbUser, withActiveSpanOnly, ignoredQueries)) {
       return preparedStatement.execute();
     }
   }
