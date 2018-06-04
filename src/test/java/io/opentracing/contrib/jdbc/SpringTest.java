@@ -29,10 +29,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -169,8 +166,8 @@ public class SpringTest {
   @Test
   public void spring_with_ignored_statement() throws Exception {
     BasicDataSource dataSource = getDataSource(false, Arrays.asList(
-            "CREATE TABLE ignored (id INTEGER, TEST VARCHAR)",
-            "INSERT INTO ignored (id, \\\"TEST\\\") VALUES (1, 'value')"
+        "CREATE TABLE ignored (id INTEGER, TEST VARCHAR)",
+        "INSERT INTO ignored (id, \\\"TEST\\\") VALUES (1, 'value')"
     ));
 
     JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
@@ -196,7 +193,7 @@ public class SpringTest {
     dataSource.setDriverClassName("io.opentracing.contrib.jdbc.TracingDriver");
     dataSource
         .setUrl("jdbc:tracing:h2:mem:spring?" + ignoreForTracing +
-                "traceWithActiveSpanOnly=" + traceWithActiveSpanOnly);
+            "traceWithActiveSpanOnly=" + traceWithActiveSpanOnly);
     dataSource.setUsername("sa");
     dataSource.setPassword("");
     return dataSource;
