@@ -230,7 +230,8 @@ public class HibernateTest {
 
   @Test
   public void hibernate_with_ignored_statement() {
-    SessionFactory sessionFactory = createSessionFactory(false, Arrays.asList("insert into Employee (id) values (?)"));
+    SessionFactory sessionFactory = createSessionFactory(false,
+        Arrays.asList("insert into Employee (id) values (?)"));
     Session session = sessionFactory.openSession();
 
     Employee employee = new Employee();
@@ -264,14 +265,16 @@ public class HibernateTest {
     return createSessionFactory(traceWithActiveSpanOnly, new ArrayList<String>());
   }
 
-  private SessionFactory createSessionFactory(boolean traceWithActiveSpanOnly, List<String> ignored) {
+  private SessionFactory createSessionFactory(boolean traceWithActiveSpanOnly,
+      List<String> ignored) {
     String ignoredForTrace = TestUtil.buildIgnoredString(ignored);
     Configuration configuration = new Configuration();
     configuration.addAnnotatedClass(Employee.class);
     configuration.setProperty("hibernate.connection.driver_class",
         "io.opentracing.contrib.jdbc.TracingDriver");
     configuration.setProperty("hibernate.connection.url",
-        "jdbc:tracing:h2:mem:hibernate?" + ignoredForTrace + "traceWithActiveSpanOnly=" + traceWithActiveSpanOnly);
+        "jdbc:tracing:h2:mem:hibernate?" + ignoredForTrace + "traceWithActiveSpanOnly="
+            + traceWithActiveSpanOnly);
     configuration.setProperty("hibernate.connection.username", "sa");
     configuration.setProperty("hibernate.connection.password", "");
     configuration.setProperty("hibernate.dialect", "org.hibernate.dialect.H2Dialect");
