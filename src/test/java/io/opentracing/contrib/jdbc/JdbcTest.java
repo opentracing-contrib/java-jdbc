@@ -14,9 +14,11 @@
 package io.opentracing.contrib.jdbc;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
+import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracerTestUtil;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -51,4 +53,19 @@ public class JdbcTest {
     assertEquals(1, spans.size());
   }
 
+  @Test
+  public void with_error() throws Exception {
+    Connection connection = DriverManager.getConnection("jdbc:tracing:h2:mem:jdbc");
+    Statement statement = connection.createStatement();
+    try {
+      statement.executeUpdate("CREATE TABLE employer (id INTEGER2)");
+    } catch (Exception ignore) {
+    }
+    connection.close();
+
+    List<MockSpan> spans = mockTracer.finishedSpans();
+    assertEquals(1, spans.size());
+    MockSpan span = spans.get(0);
+    assertTrue(span.tags().containsKey(Tags.ERROR.getKey()));
+  }
 }

@@ -20,7 +20,12 @@ import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Enumeration;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -62,7 +67,7 @@ public class TracingDriver implements Driver {
     Connection connection = wrappedDriver.connect(realUrl, info);
 
     return new TracingConnection(connection, dbType, dbUser, url.contains(WITH_ACTIVE_SPAN_ONLY),
-            extractIgnoredStatements(url));
+        extractIgnoredStatements(url));
   }
 
   @Override

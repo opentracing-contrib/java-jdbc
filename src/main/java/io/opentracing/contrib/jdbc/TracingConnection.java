@@ -15,7 +15,6 @@ package io.opentracing.contrib.jdbc;
 
 
 import io.opentracing.Tracer;
-
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
@@ -46,12 +45,12 @@ public class TracingConnection implements Connection {
   private final Tracer tracer;
 
   public TracingConnection(Connection connection, String dbType, String dbUser,
-                           boolean withActiveSpanOnly, Set<String> ignoredStatements) {
+      boolean withActiveSpanOnly, Set<String> ignoredStatements) {
     this(connection, dbType, dbUser, withActiveSpanOnly, ignoredStatements, null);
   }
 
   public TracingConnection(Connection connection, String dbType, String dbUser,
-                           boolean withActiveSpanOnly, Set<String> ignoredStatements, Tracer tracer) {
+      boolean withActiveSpanOnly, Set<String> ignoredStatements, Tracer tracer) {
     this.connection = connection;
     this.dbType = dbType;
     this.dbUser = dbUser;
@@ -62,7 +61,8 @@ public class TracingConnection implements Connection {
 
   @Override
   public Statement createStatement() throws SQLException {
-    return new TracingStatement(connection.createStatement(), dbType, dbUser, withActiveSpanOnly, ignoredStatements, tracer);
+    return new TracingStatement(connection.createStatement(), dbType, dbUser, withActiveSpanOnly,
+        ignoredStatements, tracer);
   }
 
   @Override

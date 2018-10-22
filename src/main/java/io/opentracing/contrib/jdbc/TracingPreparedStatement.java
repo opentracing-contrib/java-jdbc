@@ -18,7 +18,6 @@ import static io.opentracing.contrib.jdbc.JdbcTracingUtils.buildScope;
 
 import io.opentracing.Scope;
 import io.opentracing.Tracer;
-
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -52,12 +51,12 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
   private final Tracer tracer;
 
   public TracingPreparedStatement(PreparedStatement preparedStatement, String query, String dbType,
-                                  String dbUser, boolean withActiveSpanOnly, Set<String> ignoredStatements) {
+      String dbUser, boolean withActiveSpanOnly, Set<String> ignoredStatements) {
     this(preparedStatement, query, dbType, dbUser, withActiveSpanOnly, ignoredStatements, null);
   }
 
   public TracingPreparedStatement(PreparedStatement preparedStatement, String query, String dbType,
-                                  String dbUser, boolean withActiveSpanOnly, Set<String> ignoredStatements, Tracer tracer) {
+      String dbUser, boolean withActiveSpanOnly, Set<String> ignoredStatements, Tracer tracer) {
     super(preparedStatement, query, dbType, dbUser, withActiveSpanOnly, ignoredStatements);
     this.preparedStatement = preparedStatement;
     this.query = query;
@@ -70,15 +69,29 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
 
   @Override
   public ResultSet executeQuery() throws SQLException {
-    try (Scope ignored = buildScope("Query", query, dbType, dbUser, withActiveSpanOnly, ignoredQueries, tracer)) {
+    Scope scope = buildScope("Query", query, dbType, dbUser, withActiveSpanOnly, ignoredQueries,
+        tracer);
+    try {
       return preparedStatement.executeQuery();
+    } catch (Exception e) {
+      JdbcTracingUtils.onError(e, scope.span());
+      throw e;
+    } finally {
+      scope.close();
     }
   }
 
   @Override
   public int executeUpdate() throws SQLException {
-    try (Scope ignored = buildScope("Update", query, dbType, dbUser, withActiveSpanOnly, ignoredQueries, tracer)) {
+    Scope scope = buildScope("Update", query, dbType, dbUser, withActiveSpanOnly, ignoredQueries,
+        tracer);
+    try {
       return preparedStatement.executeUpdate();
+    } catch (Exception e) {
+      JdbcTracingUtils.onError(e, scope.span());
+      throw e;
+    } finally {
+      scope.close();
     }
   }
 
@@ -185,8 +198,15 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
 
   @Override
   public boolean execute() throws SQLException {
-    try (Scope ignored = buildScope("Execute", query, dbType, dbUser, withActiveSpanOnly, ignoredQueries, tracer)) {
+    Scope scope = buildScope("Execute", query, dbType, dbUser, withActiveSpanOnly,
+        ignoredQueries, tracer);
+    try {
       return preparedStatement.execute();
+    } catch (Exception e) {
+      JdbcTracingUtils.onError(e, scope.span());
+      throw e;
+    } finally {
+      scope.close();
     }
   }
 
