@@ -13,7 +13,7 @@
  */
 package io.opentracing.contrib.jdbc;
 
-
+import io.opentracing.Tracer;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -34,9 +34,9 @@ public class TracingDriver implements Driver {
 
   private static final Driver INSTANCE = new TracingDriver();
 
-  private static final String TRACE_WITH_ACTIVE_SPAN_ONLY = "traceWithActiveSpanOnly";
+  protected static final String TRACE_WITH_ACTIVE_SPAN_ONLY = "traceWithActiveSpanOnly";
 
-  private static final String WITH_ACTIVE_SPAN_ONLY = TRACE_WITH_ACTIVE_SPAN_ONLY + "=true";
+  protected static final String WITH_ACTIVE_SPAN_ONLY = TRACE_WITH_ACTIVE_SPAN_ONLY + "=true";
   public static final String IGNORE_FOR_TRACING_REGEX = "ignoreForTracing=\"((?:\\\\\"|[^\"])*)\"[;]*";
 
   static {
@@ -47,6 +47,8 @@ public class TracingDriver implements Driver {
     }
   }
 
+  protected Tracer tracer;
+  
   @Override
   public Connection connect(String url, Properties info) throws SQLException {
     // if there is no url, we have problems
@@ -67,7 +69,7 @@ public class TracingDriver implements Driver {
     Connection connection = wrappedDriver.connect(realUrl, info);
 
     return new TracingConnection(connection, dbType, dbUser, url.contains(WITH_ACTIVE_SPAN_ONLY),
-        extractIgnoredStatements(url));
+        extractIgnoredStatements(url), tracer);
   }
 
   @Override
@@ -103,7 +105,11 @@ public class TracingDriver implements Driver {
     return null;
   }
 
-  private Driver findDriver(String realUrl) throws SQLException {
+  public void setTracer(Tracer tracer) {
+    this.tracer = tracer;
+  }
+
+  protected Driver findDriver(String realUrl) throws SQLException {
 
     Driver wrappedDriver = null;
     for (Driver driver : registeredDrivers()) {
@@ -131,18 +137,18 @@ public class TracingDriver implements Driver {
     return result;
   }
 
-  private String extractRealUrl(String url) {
+  protected String extractRealUrl(String url) {
     String extracted = url.startsWith("jdbc:tracing:") ? url.replace("tracing:", "") : url;
     return extracted.replaceAll(TRACE_WITH_ACTIVE_SPAN_ONLY + "=(true|false)[;]*", "")
         .replaceAll(IGNORE_FOR_TRACING_REGEX, "")
         .replaceAll("\\?$", "");
   }
 
-  private String extractDbType(String realUrl) {
+  protected String extractDbType(String realUrl) {
     return realUrl.split(":")[1];
   }
 
-  private Set<String> extractIgnoredStatements(String url) {
+  protected Set<String> extractIgnoredStatements(String url) {
     final String regex = IGNORE_FOR_TRACING_REGEX;
 
     final Pattern pattern = Pattern.compile(regex);
