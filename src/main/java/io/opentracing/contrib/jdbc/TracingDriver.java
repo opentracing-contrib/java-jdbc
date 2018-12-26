@@ -103,32 +103,23 @@ public class TracingDriver implements Driver {
     return null;
   }
 
-  private Driver findDriver(String realUrl) throws SQLException {
-
-    Driver wrappedDriver = null;
-    for (Driver driver : registeredDrivers()) {
+  protected Driver findDriver(String realUrl) throws SQLException {
+    
+    if (realUrl == null || realUrl.trim().length() == 0) {
+      throw new IllegalArgumentException("url is required");
+    }
+    
+    for (Driver candidate : Collections.list(DriverManager.getDrivers())) {
       try {
-        if (driver.acceptsURL(realUrl)) {
-          wrappedDriver = driver;
-          break;
+        if (candidate.acceptsURL(realUrl)) {
+          return candidate;
         }
-      } catch (SQLException e) {
+      } catch (SQLException ignored) {
         // intentionally ignore exception
       }
     }
-    if (wrappedDriver == null) {
-      throw new SQLException("Unable to find a driver that accepts " + realUrl);
-    }
-    return wrappedDriver;
-  }
 
-  private List<Driver> registeredDrivers() {
-    List<Driver> result = new ArrayList<>();
-    for (Enumeration<Driver> driverEnumeration = DriverManager.getDrivers();
-        driverEnumeration.hasMoreElements(); ) {
-      result.add(driverEnumeration.nextElement());
-    }
-    return result;
+    throw new SQLException("Unable to find a driver that accepts url: " + realUrl);
   }
 
   private String extractRealUrl(String url) {
