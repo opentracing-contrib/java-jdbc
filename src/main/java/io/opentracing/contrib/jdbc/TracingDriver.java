@@ -72,7 +72,7 @@ public class TracingDriver implements Driver {
 
   @Override
   public boolean acceptsURL(String url) throws SQLException {
-    return url != null && url.startsWith("jdbc:tracing:");
+    return url != null && url.startsWith(getUrlPrefix());
   }
 
   @Override
@@ -101,6 +101,10 @@ public class TracingDriver implements Driver {
   public Logger getParentLogger() throws SQLFeatureNotSupportedException {
     // There is no way to get it from wrapped driver
     return null;
+  }
+
+  protected String getUrlPrefix() {
+    return "jdbc:tracing:";
   }
 
   private Driver findDriver(String realUrl) throws SQLException {
@@ -132,7 +136,8 @@ public class TracingDriver implements Driver {
   }
 
   private String extractRealUrl(String url) {
-    String extracted = url.startsWith("jdbc:tracing:") ? url.replace("tracing:", "") : url;
+    String extracted = url.startsWith(getUrlPrefix()) ? url.replace(getUrlPrefix(), "jdbc:") : url;
+    
     return extracted.replaceAll(TRACE_WITH_ACTIVE_SPAN_ONLY + "=(true|false)[;]*", "")
         .replaceAll(IGNORE_FOR_TRACING_REGEX, "")
         .replaceAll("\\?$", "");
