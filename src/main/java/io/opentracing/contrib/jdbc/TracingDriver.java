@@ -38,7 +38,10 @@ public class TracingDriver implements Driver {
   protected static final String TRACE_WITH_ACTIVE_SPAN_ONLY = "traceWithActiveSpanOnly";
 
   protected static final String WITH_ACTIVE_SPAN_ONLY = TRACE_WITH_ACTIVE_SPAN_ONLY + "=true";
+  
   public static final String IGNORE_FOR_TRACING_REGEX = "ignoreForTracing=\"((?:\\\\\"|[^\"])*)\"[;]*";
+  
+  protected static final Pattern PATTERN_FOR_IGNORING = Pattern.compile(IGNORE_FOR_TRACING_REGEX);
 
   static {
     try {
@@ -141,15 +144,13 @@ public class TracingDriver implements Driver {
 
   protected String extractDbType(String realUrl) {
     return realUrl.split(":")[1];
-  }
-
+  }  
+  
   protected Set<String> extractIgnoredStatements(String url) {
-    final String regex = IGNORE_FOR_TRACING_REGEX;
+        
+    final Matcher matcher = PATTERN_FOR_IGNORING.matcher(url);
 
-    final Pattern pattern = Pattern.compile(regex);
-    final Matcher matcher = pattern.matcher(url);
-
-    Set<String> results = new HashSet<>();
+    Set<String> results = new HashSet<>(8);
 
     while (matcher.find()) {
       String rawValue = matcher.group(1);
