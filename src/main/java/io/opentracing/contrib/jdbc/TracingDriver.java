@@ -13,7 +13,7 @@
  */
 package io.opentracing.contrib.jdbc;
 
-
+import io.opentracing.Tracer;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -35,9 +35,9 @@ public class TracingDriver implements Driver {
 
   private static final Driver INSTANCE = new TracingDriver();
 
-  private static final String TRACE_WITH_ACTIVE_SPAN_ONLY = "traceWithActiveSpanOnly";
+  protected static final String TRACE_WITH_ACTIVE_SPAN_ONLY = "traceWithActiveSpanOnly";
 
-  private static final String WITH_ACTIVE_SPAN_ONLY = TRACE_WITH_ACTIVE_SPAN_ONLY + "=true";
+  protected static final String WITH_ACTIVE_SPAN_ONLY = TRACE_WITH_ACTIVE_SPAN_ONLY + "=true";
   public static final String IGNORE_FOR_TRACING_REGEX = "ignoreForTracing=\"((?:\\\\\"|[^\"])*)\"[;]*";
 
   static {
@@ -48,6 +48,8 @@ public class TracingDriver implements Driver {
     }
   }
 
+  protected Tracer tracer;
+  
   @Override
   public Connection connect(String url, Properties info) throws SQLException {
     // if there is no url, we have problems
@@ -68,7 +70,7 @@ public class TracingDriver implements Driver {
     Connection connection = wrappedDriver.connect(realUrl, info);
 
     return new TracingConnection(connection, dbType, dbUser, url.contains(WITH_ACTIVE_SPAN_ONLY),
-        extractIgnoredStatements(url));
+        extractIgnoredStatements(url), tracer);
   }
 
   @Override
@@ -103,6 +105,10 @@ public class TracingDriver implements Driver {
     // There is no way to get it from wrapped driver
     return null;
   }
+  
+  public void setTracer(Tracer tracer) {
+    this.tracer = tracer;
+  }
 
   protected String getUrlPrefix() {
     return "jdbc:tracing:";
@@ -112,7 +118,7 @@ public class TracingDriver implements Driver {
     if (realUrl == null || realUrl.trim().length() == 0) {
       throw new IllegalArgumentException("url is required");
     }
-    
+
     for (Driver candidate : Collections.list(DriverManager.getDrivers())) {
       try {
         if (candidate.acceptsURL(realUrl)) {
@@ -126,19 +132,18 @@ public class TracingDriver implements Driver {
     throw new SQLException("Unable to find a driver that accepts url: " + realUrl);
   }
 
-  private String extractRealUrl(String url) {
+  protected String extractRealUrl(String url) {
     String extracted = url.startsWith(getUrlPrefix()) ? url.replace(getUrlPrefix(), "jdbc:") : url;
-    
     return extracted.replaceAll(TRACE_WITH_ACTIVE_SPAN_ONLY + "=(true|false)[;]*", "")
         .replaceAll(IGNORE_FOR_TRACING_REGEX, "")
         .replaceAll("\\?$", "");
   }
 
-  private String extractDbType(String realUrl) {
+  protected String extractDbType(String realUrl) {
     return realUrl.split(":")[1];
   }
 
-  private Set<String> extractIgnoredStatements(String url) {
+  protected Set<String> extractIgnoredStatements(String url) {
     final String regex = IGNORE_FOR_TRACING_REGEX;
 
     final Pattern pattern = Pattern.compile(regex);
