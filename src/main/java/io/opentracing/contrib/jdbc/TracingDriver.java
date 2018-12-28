@@ -21,6 +21,7 @@ import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.List;
@@ -112,32 +113,23 @@ public class TracingDriver implements Driver {
   protected String getUrlPrefix() {
     return "jdbc:tracing:";
   }
-  
+
   protected Driver findDriver(String realUrl) throws SQLException {
-    Driver wrappedDriver = null;
-    for (Driver driver : registeredDrivers()) {
+    if (realUrl == null || realUrl.trim().length() == 0) {
+      throw new IllegalArgumentException("url is required");
+    }
+
+    for (Driver candidate : Collections.list(DriverManager.getDrivers())) {
       try {
-        if (driver.acceptsURL(realUrl)) {
-          wrappedDriver = driver;
-          break;
+        if (candidate.acceptsURL(realUrl)) {
+          return candidate;
         }
-      } catch (SQLException e) {
+      } catch (SQLException ignored) {
         // intentionally ignore exception
       }
     }
-    if (wrappedDriver == null) {
-      throw new SQLException("Unable to find a driver that accepts " + realUrl);
-    }
-    return wrappedDriver;
-  }
 
-  private List<Driver> registeredDrivers() {
-    List<Driver> result = new ArrayList<>();
-    for (Enumeration<Driver> driverEnumeration = DriverManager.getDrivers();
-        driverEnumeration.hasMoreElements(); ) {
-      result.add(driverEnumeration.nextElement());
-    }
-    return result;
+    throw new SQLException("Unable to find a driver that accepts url: " + realUrl);
   }
 
   protected String extractRealUrl(String url) {
