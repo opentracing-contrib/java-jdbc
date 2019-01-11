@@ -38,22 +38,20 @@ import java.util.concurrent.Executor;
 public class TracingConnection implements Connection {
 
   private final Connection connection;
-  private final String dbType;
-  private final String dbUser;
+  private final ConnectionInfo connectionInfo;
   private final boolean withActiveSpanOnly;
   private final Set<String> ignoredStatements;
   private final Tracer tracer;
 
-  public TracingConnection(Connection connection, String dbType, String dbUser,
-      boolean withActiveSpanOnly, Set<String> ignoredStatements) {
-    this(connection, dbType, dbUser, withActiveSpanOnly, ignoredStatements, null);
+  public TracingConnection(Connection connection, ConnectionInfo connectionInfo,
+                           boolean withActiveSpanOnly, Set<String> ignoredStatements) {
+    this(connection, connectionInfo, withActiveSpanOnly, ignoredStatements, null);
   }
 
-  public TracingConnection(Connection connection, String dbType, String dbUser,
-      boolean withActiveSpanOnly, Set<String> ignoredStatements, Tracer tracer) {
+  public TracingConnection(Connection connection, ConnectionInfo connectionInfo,
+                           boolean withActiveSpanOnly, Set<String> ignoredStatements, Tracer tracer) {
     this.connection = connection;
-    this.dbType = dbType;
-    this.dbUser = dbUser;
+    this.connectionInfo = connectionInfo;
     this.withActiveSpanOnly = withActiveSpanOnly;
     this.ignoredStatements = ignoredStatements;
     this.tracer = tracer;
@@ -61,19 +59,19 @@ public class TracingConnection implements Connection {
 
   @Override
   public Statement createStatement() throws SQLException {
-    return new TracingStatement(connection.createStatement(), dbType, dbUser, withActiveSpanOnly,
+    return new TracingStatement(connection.createStatement(), connectionInfo, withActiveSpanOnly,
         ignoredStatements, tracer);
   }
 
   @Override
   public PreparedStatement prepareStatement(String sql) throws SQLException {
-    return new TracingPreparedStatement(connection.prepareStatement(sql), sql, dbType, dbUser,
+    return new TracingPreparedStatement(connection.prepareStatement(sql), sql, connectionInfo,
         withActiveSpanOnly, ignoredStatements, tracer);
   }
 
   @Override
   public CallableStatement prepareCall(String sql) throws SQLException {
-    return new TracingCallableStatement(connection.prepareCall(sql), sql, dbType, dbUser,
+    return new TracingCallableStatement(connection.prepareCall(sql), sql, connectionInfo,
         withActiveSpanOnly, ignoredStatements);
   }
 
@@ -161,14 +159,14 @@ public class TracingConnection implements Connection {
   public Statement createStatement(int resultSetType, int resultSetConcurrency)
       throws SQLException {
     return new TracingStatement(connection.createStatement(resultSetType, resultSetConcurrency),
-        dbType, dbUser, withActiveSpanOnly, ignoredStatements);
+        connectionInfo, withActiveSpanOnly, ignoredStatements);
   }
 
   @Override
   public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency)
       throws SQLException {
     return new TracingPreparedStatement(
-        connection.prepareStatement(sql, resultSetType, resultSetConcurrency), sql, dbType, dbUser,
+        connection.prepareStatement(sql, resultSetType, resultSetConcurrency), sql, connectionInfo,
         withActiveSpanOnly, ignoredStatements, tracer);
   }
 
@@ -176,7 +174,7 @@ public class TracingConnection implements Connection {
   public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency)
       throws SQLException {
     return new TracingCallableStatement(
-        connection.prepareCall(sql, resultSetType, resultSetConcurrency), sql, dbType, dbUser,
+        connection.prepareCall(sql, resultSetType, resultSetConcurrency), sql, connectionInfo,
         withActiveSpanOnly, ignoredStatements);
   }
 
@@ -225,7 +223,7 @@ public class TracingConnection implements Connection {
       int resultSetHoldability) throws SQLException {
     return new TracingStatement(
         connection.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability),
-        dbType, dbUser, withActiveSpanOnly, ignoredStatements);
+        connectionInfo, withActiveSpanOnly, ignoredStatements);
   }
 
   @Override
@@ -233,7 +231,7 @@ public class TracingConnection implements Connection {
       int resultSetHoldability) throws SQLException {
     return new TracingPreparedStatement(
         connection.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability),
-        sql, dbType, dbUser, withActiveSpanOnly, ignoredStatements, tracer);
+        sql, connectionInfo, withActiveSpanOnly, ignoredStatements, tracer);
   }
 
   @Override
@@ -241,25 +239,25 @@ public class TracingConnection implements Connection {
       int resultSetHoldability) throws SQLException {
     return new TracingCallableStatement(
         connection.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability), sql,
-        dbType, dbUser, withActiveSpanOnly, ignoredStatements, tracer);
+        connectionInfo, withActiveSpanOnly, ignoredStatements, tracer);
   }
 
   @Override
   public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException {
     return new TracingPreparedStatement(connection.prepareStatement(sql, autoGeneratedKeys), sql,
-        dbType, dbUser, withActiveSpanOnly, ignoredStatements, tracer);
+        connectionInfo, withActiveSpanOnly, ignoredStatements, tracer);
   }
 
   @Override
   public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException {
     return new TracingPreparedStatement(connection.prepareStatement(sql, columnIndexes), sql,
-        dbType, dbUser, withActiveSpanOnly, ignoredStatements, tracer);
+        connectionInfo, withActiveSpanOnly, ignoredStatements, tracer);
   }
 
   @Override
   public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
-    return new TracingPreparedStatement(connection.prepareStatement(sql, columnNames), sql, dbType,
-        dbUser, withActiveSpanOnly, ignoredStatements, tracer);
+    return new TracingPreparedStatement(connection.prepareStatement(sql, columnNames), sql, connectionInfo,
+        withActiveSpanOnly, ignoredStatements, tracer);
   }
 
   @Override

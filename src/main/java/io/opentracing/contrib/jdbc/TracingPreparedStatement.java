@@ -44,24 +44,21 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
 
   private final PreparedStatement preparedStatement;
   private final String query;
-  private final String dbType;
-  private final String dbUser;
+  private final ConnectionInfo connectionInfo;
   private final boolean withActiveSpanOnly;
   private final Set<String> ignoredQueries;
   private final Tracer tracer;
 
-  public TracingPreparedStatement(PreparedStatement preparedStatement, String query, String dbType,
-      String dbUser, boolean withActiveSpanOnly, Set<String> ignoredStatements) {
-    this(preparedStatement, query, dbType, dbUser, withActiveSpanOnly, ignoredStatements, null);
+  public TracingPreparedStatement(PreparedStatement preparedStatement, String query, ConnectionInfo connectionInfo,
+                                  boolean withActiveSpanOnly, Set<String> ignoredStatements) {
+    this(preparedStatement, query, connectionInfo, withActiveSpanOnly, ignoredStatements, null);
   }
 
-  public TracingPreparedStatement(PreparedStatement preparedStatement, String query, String dbType,
-      String dbUser, boolean withActiveSpanOnly, Set<String> ignoredStatements, Tracer tracer) {
-    super(preparedStatement, query, dbType, dbUser, withActiveSpanOnly, ignoredStatements);
+  public TracingPreparedStatement(PreparedStatement preparedStatement, String query, ConnectionInfo connectionInfo, boolean withActiveSpanOnly, Set<String> ignoredStatements, Tracer tracer) {
+    super(preparedStatement, query, connectionInfo, withActiveSpanOnly, ignoredStatements);
     this.preparedStatement = preparedStatement;
     this.query = query;
-    this.dbType = dbType;
-    this.dbUser = dbUser;
+    this.connectionInfo = connectionInfo;
     this.withActiveSpanOnly = withActiveSpanOnly;
     this.ignoredQueries = ignoredStatements;
     this.tracer = tracer;
@@ -69,7 +66,7 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
 
   @Override
   public ResultSet executeQuery() throws SQLException {
-    Scope scope = buildScope("Query", query, dbType, dbUser, withActiveSpanOnly, ignoredQueries,
+    Scope scope = buildScope("Query", query, connectionInfo, withActiveSpanOnly, ignoredQueries,
         tracer);
     try {
       return preparedStatement.executeQuery();
@@ -83,7 +80,7 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
 
   @Override
   public int executeUpdate() throws SQLException {
-    Scope scope = buildScope("Update", query, dbType, dbUser, withActiveSpanOnly, ignoredQueries,
+    Scope scope = buildScope("Update", query, connectionInfo, withActiveSpanOnly, ignoredQueries,
         tracer);
     try {
       return preparedStatement.executeUpdate();
@@ -198,7 +195,7 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
 
   @Override
   public boolean execute() throws SQLException {
-    Scope scope = buildScope("Execute", query, dbType, dbUser, withActiveSpanOnly,
+    Scope scope = buildScope("Execute", query, connectionInfo, withActiveSpanOnly,
         ignoredQueries, tracer);
     try {
       return preparedStatement.execute();

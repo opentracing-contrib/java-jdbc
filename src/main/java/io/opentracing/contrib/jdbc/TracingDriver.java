@@ -72,7 +72,8 @@ public class TracingDriver implements Driver {
     Driver wrappedDriver = findDriver(realUrl);
     Connection connection = wrappedDriver.connect(realUrl, info);
 
-    return new TracingConnection(connection, dbType, dbUser, url.contains(WITH_ACTIVE_SPAN_ONLY),
+    ConnectionInfo connectionInfo = new ConnectionInfo.Builder().dbUser(dbUser).dbType(dbType).build();
+    return new TracingConnection(connection, connectionInfo, url.contains(WITH_ACTIVE_SPAN_ONLY),
         extractIgnoredStatements(url), tracer);
   }
 
