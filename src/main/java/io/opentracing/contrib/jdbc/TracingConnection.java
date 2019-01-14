@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 The OpenTracing Authors
+ * Copyright 2017-2019 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -44,12 +44,12 @@ public class TracingConnection implements Connection {
   private final Tracer tracer;
 
   public TracingConnection(Connection connection, ConnectionInfo connectionInfo,
-                           boolean withActiveSpanOnly, Set<String> ignoredStatements) {
+      boolean withActiveSpanOnly, Set<String> ignoredStatements) {
     this(connection, connectionInfo, withActiveSpanOnly, ignoredStatements, null);
   }
 
   public TracingConnection(Connection connection, ConnectionInfo connectionInfo,
-                           boolean withActiveSpanOnly, Set<String> ignoredStatements, Tracer tracer) {
+      boolean withActiveSpanOnly, Set<String> ignoredStatements, Tracer tracer) {
     this.connection = connection;
     this.connectionInfo = connectionInfo;
     this.withActiveSpanOnly = withActiveSpanOnly;
@@ -256,7 +256,8 @@ public class TracingConnection implements Connection {
 
   @Override
   public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
-    return new TracingPreparedStatement(connection.prepareStatement(sql, columnNames), sql, connectionInfo,
+    return new TracingPreparedStatement(connection.prepareStatement(sql, columnNames), sql,
+        connectionInfo,
         withActiveSpanOnly, ignoredStatements, tracer);
   }
 

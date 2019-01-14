@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 The OpenTracing Authors
+ * Copyright 2017-2019 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -20,11 +20,8 @@ import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -38,9 +35,9 @@ public class TracingDriver implements Driver {
   protected static final String TRACE_WITH_ACTIVE_SPAN_ONLY = "traceWithActiveSpanOnly";
 
   protected static final String WITH_ACTIVE_SPAN_ONLY = TRACE_WITH_ACTIVE_SPAN_ONLY + "=true";
-  
+
   public static final String IGNORE_FOR_TRACING_REGEX = "ignoreForTracing=\"((?:\\\\\"|[^\"])*)\"[;]*";
-  
+
   protected static final Pattern PATTERN_FOR_IGNORING = Pattern.compile(IGNORE_FOR_TRACING_REGEX);
 
   static {
@@ -52,7 +49,7 @@ public class TracingDriver implements Driver {
   }
 
   protected Tracer tracer;
-  
+
   @Override
   public Connection connect(String url, Properties info) throws SQLException {
     // if there is no url, we have problems
@@ -72,7 +69,8 @@ public class TracingDriver implements Driver {
     Driver wrappedDriver = findDriver(realUrl);
     Connection connection = wrappedDriver.connect(realUrl, info);
 
-    ConnectionInfo connectionInfo = new ConnectionInfo.Builder().dbUser(dbUser).dbType(dbType).build();
+    ConnectionInfo connectionInfo = new ConnectionInfo.Builder().dbUser(dbUser).dbType(dbType)
+        .build();
     return new TracingConnection(connection, connectionInfo, url.contains(WITH_ACTIVE_SPAN_ONLY),
         extractIgnoredStatements(url), tracer);
   }
@@ -109,7 +107,7 @@ public class TracingDriver implements Driver {
     // There is no way to get it from wrapped driver
     return null;
   }
-  
+
   public void setTracer(Tracer tracer) {
     this.tracer = tracer;
   }
@@ -145,10 +143,10 @@ public class TracingDriver implements Driver {
 
   protected String extractDbType(String realUrl) {
     return realUrl.split(":")[1];
-  }  
-  
+  }
+
   protected Set<String> extractIgnoredStatements(String url) {
-        
+
     final Matcher matcher = PATTERN_FOR_IGNORING.matcher(url);
 
     Set<String> results = new HashSet<>(8);
