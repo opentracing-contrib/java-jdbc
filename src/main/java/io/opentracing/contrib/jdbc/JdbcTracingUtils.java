@@ -30,8 +30,7 @@ class JdbcTracingUtils {
 
   static Scope buildScope(String operationName,
       String sql,
-      String dbType,
-      String dbUser,
+      ConnectionInfo connectionInfo,
       boolean withActiveSpanOnly,
       Set<String> ignoredStatements,
       Tracer tracer) {
@@ -46,7 +45,7 @@ class JdbcTracingUtils {
         .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT);
 
     Scope scope = spanBuilder.startActive(true);
-    decorate(scope.span(), sql, dbType, dbUser);
+    decorate(scope.span(), sql, connectionInfo);
 
     return scope;
   }
@@ -60,13 +59,23 @@ class JdbcTracingUtils {
 
   private static void decorate(Span span,
       String sql,
-      String dbType,
-      String dbUser) {
+      ConnectionInfo connectionInfo) {
     Tags.COMPONENT.set(span, COMPONENT_NAME);
     Tags.DB_STATEMENT.set(span, sql);
-    Tags.DB_TYPE.set(span, dbType);
-    if (dbUser != null) {
-      Tags.DB_USER.set(span, dbUser);
+    if (connectionInfo.getDbType() != null) {
+      Tags.DB_TYPE.set(span, connectionInfo.getDbType());
+    }
+    if (connectionInfo.getDbIp() != null) {
+      Tags.PEER_HOST_IPV4.set(span, connectionInfo.getDbIp());
+    }
+    if (connectionInfo.getDbInstance() != null) {
+      Tags.DB_INSTANCE.set(span, connectionInfo.getDbInstance());
+    }
+    if (connectionInfo.getDbUser() != null) {
+      Tags.DB_USER.set(span, connectionInfo.getDbUser());
+    }
+    if (connectionInfo.getDbPort() != null) {
+      Tags.PEER_PORT.set(span, connectionInfo.getDbPort());
     }
   }
 

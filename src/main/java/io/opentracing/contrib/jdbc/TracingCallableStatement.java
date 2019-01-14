@@ -40,14 +40,12 @@ public class TracingCallableStatement extends TracingPreparedStatement implement
 
   private final CallableStatement statement;
 
-  public TracingCallableStatement(CallableStatement statement, String query, String dbType,
-      String dbUser, boolean withActiveSpanOnly, Set<String> ignoredStatements) {
-    this(statement, query, dbType, dbUser, withActiveSpanOnly, ignoredStatements, null);
+  public TracingCallableStatement(CallableStatement statement, String query, ConnectionInfo connectionInfo, boolean withActiveSpanOnly, Set<String> ignoredStatements) {
+    this(statement, query, connectionInfo, withActiveSpanOnly, ignoredStatements, null);
   }
 
-  public TracingCallableStatement(CallableStatement statement, String query, String dbType,
-      String dbUser, boolean withActiveSpanOnly, Set<String> ignoredStatements, Tracer tracer) {
-    super(statement, query, dbType, dbUser, withActiveSpanOnly, ignoredStatements, tracer);
+  public TracingCallableStatement(CallableStatement statement, String query, ConnectionInfo connectionInfo, boolean withActiveSpanOnly, Set<String> ignoredStatements, Tracer tracer) {
+    super(statement, query, connectionInfo, withActiveSpanOnly, ignoredStatements, tracer);
     this.statement = statement;
   }
 
