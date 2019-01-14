@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2018 The OpenTracing Authors
+ * Copyright 2017-2019 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -37,22 +37,22 @@ public class TracingStatement implements Statement {
   private Tracer tracer;
 
   TracingStatement(Statement statement, ConnectionInfo connectionInfo, boolean withActiveSpanOnly,
-                   Set<String> ignoredStatements) {
+      Set<String> ignoredStatements) {
     this(statement, connectionInfo, withActiveSpanOnly, ignoredStatements, null);
   }
 
   TracingStatement(Statement statement, ConnectionInfo connectionInfo, boolean withActiveSpanOnly,
-                   Set<String> ignoredStatements, Tracer tracer) {
+      Set<String> ignoredStatements, Tracer tracer) {
     this(statement, null, connectionInfo, withActiveSpanOnly, ignoredStatements, tracer);
   }
 
   TracingStatement(Statement statement, String query, ConnectionInfo connectionInfo,
-                   boolean withActiveSpanOnly, Set<String> ignoredStatements) {
+      boolean withActiveSpanOnly, Set<String> ignoredStatements) {
     this(statement, query, connectionInfo, withActiveSpanOnly, ignoredStatements, null);
   }
 
   TracingStatement(Statement statement, String query, ConnectionInfo connectionInfo,
-                   boolean withActiveSpanOnly, Set<String> ignoredStatements, Tracer tracer) {
+      boolean withActiveSpanOnly, Set<String> ignoredStatements, Tracer tracer) {
     this.statement = statement;
     this.query = query;
     this.connectionInfo = connectionInfo;
