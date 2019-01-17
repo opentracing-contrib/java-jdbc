@@ -84,7 +84,8 @@ public class SpringTest {
       assertEquals(JdbcTracingUtils.COMPONENT_NAME, span.tags().get(Tags.COMPONENT.getKey()));
       assertThat(span.tags().get(Tags.DB_STATEMENT.getKey()).toString()).isNotEmpty();
       assertEquals("h2", span.tags().get(Tags.DB_TYPE.getKey()));
-      assertEquals("sa", span.tags().get(Tags.DB_USER.getKey()));
+      assertEquals("spring", span.tags().get(Tags.DB_INSTANCE.getKey()));
+      assertEquals("localhost:-1", span.tags().get("peer.address"));
       assertEquals(0, span.generatedErrors().size());
     }
 
@@ -108,7 +109,9 @@ public class SpringTest {
     assertEquals(JdbcTracingUtils.COMPONENT_NAME, mockSpan.tags().get(Tags.COMPONENT.getKey()));
     assertThat(mockSpan.tags().get(Tags.DB_STATEMENT.getKey()).toString()).isNotEmpty();
     assertEquals("h2", mockSpan.tags().get(Tags.DB_TYPE.getKey()));
-    assertEquals("sa", mockSpan.tags().get(Tags.DB_USER.getKey()));
+    assertEquals("spring", mockSpan.tags().get(Tags.DB_INSTANCE.getKey()));
+    assertEquals("localhost:-1", mockSpan.tags().get("peer.address"));
+
     assertEquals(0, mockSpan.generatedErrors().size());
 
     assertNull(mockTracer.activeSpan());

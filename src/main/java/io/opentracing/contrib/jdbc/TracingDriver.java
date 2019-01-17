@@ -14,6 +14,8 @@
 package io.opentracing.contrib.jdbc;
 
 import io.opentracing.Tracer;
+import io.opentracing.contrib.jdbc.parser.URLParser;
+
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -62,15 +64,12 @@ public class TracingDriver implements Driver {
     }
 
     String realUrl = extractRealUrl(url);
-    String dbType = extractDbType(realUrl);
-    String dbUser = info.getProperty("user");
 
     // find the real driver for the URL
     Driver wrappedDriver = findDriver(realUrl);
     Connection connection = wrappedDriver.connect(realUrl, info);
 
-    ConnectionInfo connectionInfo = new ConnectionInfo.Builder().dbUser(dbUser).dbType(dbType)
-        .build();
+    ConnectionInfo connectionInfo = URLParser.parser(realUrl);
     return new TracingConnection(connection, connectionInfo, url.contains(WITH_ACTIVE_SPAN_ONLY),
         extractIgnoredStatements(url), tracer);
   }
@@ -139,10 +138,6 @@ public class TracingDriver implements Driver {
     return extracted.replaceAll(TRACE_WITH_ACTIVE_SPAN_ONLY + "=(true|false)[;]*", "")
         .replaceAll(IGNORE_FOR_TRACING_REGEX, "")
         .replaceAll("\\?$", "");
-  }
-
-  protected String extractDbType(String realUrl) {
-    return realUrl.split(":")[1];
   }
 
   protected Set<String> extractIgnoredStatements(String url) {
