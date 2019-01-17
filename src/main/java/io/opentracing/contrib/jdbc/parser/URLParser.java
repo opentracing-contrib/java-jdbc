@@ -45,7 +45,7 @@ public class URLParser {
         if (parser == null) {
             return ConnectionInfo.UNKNOWN_CONNECTION_INFO;
         }
-        return parser.parse(lowerCaseUrl);
+        return parser.parse(url);
     }
 
     private static ConnectionURLParser findURLParser(String lowerCaseUrl) {

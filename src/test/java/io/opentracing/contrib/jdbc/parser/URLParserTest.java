@@ -155,14 +155,6 @@ public class URLParserTest {
     }
 
     @Test
-    public void testParsePostgresqlJDBCURLWithoutDB() {
-        ConnectionInfo connectionInfo = URLParser.parser("jdbc:postgresql//primaryhost?profileSQL=true");
-        assertEquals(POSTGRESQL, connectionInfo.getDbType());
-        assertEquals("", connectionInfo.getDbInstance());
-        assertEquals("primaryhost:3306", connectionInfo.getDbPeer());
-    }
-
-    @Test
     public void testParsePostgresqlJDBCURLWithHostAndPort() {
         ConnectionInfo connectionInfo = URLParser.parser("jdbc:postgresql//primaryhost:3307/test?profileSQL=true");
         assertEquals(POSTGRESQL, connectionInfo.getDbType());
