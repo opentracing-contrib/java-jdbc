@@ -17,8 +17,12 @@ import io.opentracing.contrib.jdbc.ConnectionInfo;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class URLParser {
+    private static final Logger log = Logger.getLogger(URLParser.class.getName());
+
     private static final String MYSQL_JDBC_URL_PREFIX = "jdbc:mysql";
     private static final String ORACLE_JDBC_URL_PREFIX = "jdbc:oracle";
     private static final String H2_JDBC_URL_PREFIX = "jdbc:h2";
@@ -51,7 +55,7 @@ public class URLParser {
         try {
             return parser.parse(url);
         }catch (Exception e){
-            // TODO  log.error or do nothing
+            log.log(Level.WARNING,"error occurs when paring jdbc url");
         }
         return ConnectionInfo.UNKNOWN_CONNECTION_INFO;
     }
