@@ -15,52 +15,47 @@ package io.opentracing.contrib.jdbc.parser;
 
 public abstract class AbstractURLParser implements ConnectionURLParser {
 
-    /**
-     * Fetch the index range that database host and port from connection url.
-     *
-     * @param url
-     * @return index range that database hosts.
-     */
-    protected abstract URLLocation fetchDatabaseHostsIndexRange(final String url);
+  /**
+   * Fetch the index range that database host and port from connection url.
+   *
+   * @return index range that database hosts.
+   */
+  protected abstract URLLocation fetchDatabaseHostsIndexRange(final String url);
 
-    /**
-     * Fetch the index range that database name from connection url.
-     *
-     * @param url
-     * @return index range that database name.
-     */
-    protected abstract URLLocation fetchDatabaseNameIndexRange(final String url);
+  /**
+   * Fetch the index range that database name from connection url.
+   *
+   * @return index range that database name.
+   */
+  protected abstract URLLocation fetchDatabaseNameIndexRange(final String url);
 
-    /**
-     * Fetch database host(s) from connection url.
-     *
-     * @param url
-     * @return database host(s).
-     */
-    protected String fetchDatabaseHostsFromURL(String url) {
-        URLLocation hostsLocation = fetchDatabaseHostsIndexRange(url);
-        return url.substring(hostsLocation.startIndex(), hostsLocation.endIndex());
-    }
+  /**
+   * Fetch database host(s) from connection url.
+   *
+   * @return database host(s).
+   */
+  protected String fetchDatabaseHostsFromURL(String url) {
+    URLLocation hostsLocation = fetchDatabaseHostsIndexRange(url);
+    return url.substring(hostsLocation.startIndex(), hostsLocation.endIndex());
+  }
 
-    /**
-     * Fetch database name from connection url.
-     *
-     * @param url
-     * @return database name.
-     */
-    protected String fetchDatabaseNameFromURL(String url) {
-        URLLocation hostsLocation = fetchDatabaseNameIndexRange(url);
-        return url.substring(hostsLocation.startIndex(), hostsLocation.endIndex());
-    }
+  /**
+   * Fetch database name from connection url.
+   *
+   * @return database name.
+   */
+  protected String fetchDatabaseNameFromURL(String url) {
+    URLLocation hostsLocation = fetchDatabaseNameIndexRange(url);
+    return url.substring(hostsLocation.startIndex(), hostsLocation.endIndex());
+  }
 
-    /**
-     * Fetch database name from connection url.
-     *
-     * @param url
-     * @return database name.
-     */
-    protected String fetchDatabaseNameFromURL(String url, int[] indexRange) {
-        return url.substring(indexRange[0], indexRange[1]);
-    }
+  /**
+   * Fetch database name from connection url.
+   *
+   * @return database name.
+   */
+  protected String fetchDatabaseNameFromURL(String url, int[] indexRange) {
+    return url.substring(indexRange[0], indexRange[1]);
+  }
 
 }

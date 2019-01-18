@@ -15,7 +15,8 @@ package io.opentracing.contrib.jdbc;
 
 public class ConnectionInfo {
 
-  public static ConnectionInfo UNKNOWN_CONNECTION_INFO = new Builder("unknown_peer").dbType("unknown_type").dbInstance("unknown_instance").build();
+  public static ConnectionInfo UNKNOWN_CONNECTION_INFO = new Builder("unknown_peer")
+      .dbType("unknown_type").dbInstance("unknown_instance").build();
 
   private final String dbType;
   private final String dbUser;
@@ -27,9 +28,9 @@ public class ConnectionInfo {
     this.dbType = dbType;
     this.dbUser = dbUser;
     this.dbInstance = dbInstance;
-    if (dbHost != null && dbPort != null){
-      this.dbPeer = dbHost + ":" +dbPort;
-    }else{
+    if (dbHost != null && dbPort != null) {
+      this.dbPeer = dbHost + ":" + dbPort;
+    } else {
       this.dbPeer = "";
     }
   }
@@ -69,7 +70,7 @@ public class ConnectionInfo {
       this.dbPeer = dbPeer;
     }
 
-    public Builder(String dbHost,Integer dbPort) {
+    public Builder(String dbHost, Integer dbPort) {
       this.dbHost = dbHost;
       this.dbPort = dbPort;
     }
@@ -90,10 +91,11 @@ public class ConnectionInfo {
     }
 
     public ConnectionInfo build() {
-      if (this.dbPeer != null && !dbPeer.isEmpty()){
+      if (this.dbPeer != null && !dbPeer.isEmpty()) {
         return new ConnectionInfo(this.dbType, this.dbUser, this.dbInstance, this.dbPeer);
       }
-      return new ConnectionInfo(this.dbType, this.dbUser, this.dbInstance, this.dbHost, this.dbPort);
+      return new ConnectionInfo(this.dbType, this.dbUser, this.dbInstance, this.dbHost,
+          this.dbPort);
     }
 
   }

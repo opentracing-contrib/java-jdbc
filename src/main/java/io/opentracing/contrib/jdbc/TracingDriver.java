@@ -15,7 +15,6 @@ package io.opentracing.contrib.jdbc;
 
 import io.opentracing.Tracer;
 import io.opentracing.contrib.jdbc.parser.URLParser;
-
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;

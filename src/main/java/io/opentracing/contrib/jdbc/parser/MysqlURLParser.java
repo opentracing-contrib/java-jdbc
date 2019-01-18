@@ -17,73 +17,76 @@ import io.opentracing.contrib.jdbc.ConnectionInfo;
 
 public class MysqlURLParser extends AbstractURLParser {
 
-    private static final int DEFAULT_PORT = 3306;
-    private static final String DB_TYPE = "mysql";
+  private static final int DEFAULT_PORT = 3306;
+  private static final String DB_TYPE = "mysql";
 
-    @Override
-    protected URLLocation fetchDatabaseHostsIndexRange(String url) {
-        int hostLabelStartIndex = url.indexOf("//");
-        int hostLabelEndIndex = url.indexOf("/", hostLabelStartIndex + 2);
-        if (hostLabelEndIndex == -1) {
-            hostLabelEndIndex = url.indexOf("?", hostLabelStartIndex + 2);
-        }
-        return new URLLocation(hostLabelStartIndex + 2, hostLabelEndIndex);
+  @Override
+  protected URLLocation fetchDatabaseHostsIndexRange(String url) {
+    int hostLabelStartIndex = url.indexOf("//");
+    int hostLabelEndIndex = url.indexOf("/", hostLabelStartIndex + 2);
+    if (hostLabelEndIndex == -1) {
+      hostLabelEndIndex = url.indexOf("?", hostLabelStartIndex + 2);
     }
+    return new URLLocation(hostLabelStartIndex + 2, hostLabelEndIndex);
+  }
 
-    protected String fetchDatabaseNameFromURL(String url, int startSize) {
-        URLLocation hostsLocation = fetchDatabaseNameIndexRange(url, startSize);
-        if (hostsLocation == null) {
-            return "";
-        }
-        return url.substring(hostsLocation.startIndex(), hostsLocation.endIndex());
+  protected String fetchDatabaseNameFromURL(String url, int startSize) {
+    URLLocation hostsLocation = fetchDatabaseNameIndexRange(url, startSize);
+    if (hostsLocation == null) {
+      return "";
     }
+    return url.substring(hostsLocation.startIndex(), hostsLocation.endIndex());
+  }
 
-    protected URLLocation fetchDatabaseNameIndexRange(String url, int startSize) {
-        int databaseStartTag = url.indexOf("/", startSize);
-        if (databaseStartTag == -1) {
-            return null;
-        }
-        int databaseEndTag = url.indexOf("?", databaseStartTag);
-        if (databaseEndTag == -1) {
-            databaseEndTag = url.length();
-        }
-        return new URLLocation(databaseStartTag + 1, databaseEndTag);
+  protected URLLocation fetchDatabaseNameIndexRange(String url, int startSize) {
+    int databaseStartTag = url.indexOf("/", startSize);
+    if (databaseStartTag == -1) {
+      return null;
     }
-
-    @Override
-    protected URLLocation fetchDatabaseNameIndexRange(String url) {
-        int databaseStartTag = url.lastIndexOf("/");
-        int databaseEndTag = url.indexOf("?", databaseStartTag);
-        if (databaseEndTag == -1) {
-            databaseEndTag = url.length();
-        }
-        return new URLLocation(databaseStartTag + 1, databaseEndTag);
+    int databaseEndTag = url.indexOf("?", databaseStartTag);
+    if (databaseEndTag == -1) {
+      databaseEndTag = url.length();
     }
+    return new URLLocation(databaseStartTag + 1, databaseEndTag);
+  }
 
-    @Override
-    public ConnectionInfo parse(String url) {
-        URLLocation location = fetchDatabaseHostsIndexRange(url);
-        String hosts = url.substring(location.startIndex(), location.endIndex());
-        String[] hostSegment = hosts.split(",");
-        if (hostSegment.length > 1) {
-            StringBuilder sb = new StringBuilder();
-            for (String host : hostSegment) {
-                if (host.split(":").length == 1) {
-                    sb.append(host + ":" + DEFAULT_PORT + ",");
-                } else {
-                    sb.append(host + ",");
-                }
-            }
-            return new ConnectionInfo.Builder(sb.toString()).dbType(DB_TYPE).dbInstance(fetchDatabaseNameFromURL(url)).build();
+  @Override
+  protected URLLocation fetchDatabaseNameIndexRange(String url) {
+    int databaseStartTag = url.lastIndexOf("/");
+    int databaseEndTag = url.indexOf("?", databaseStartTag);
+    if (databaseEndTag == -1) {
+      databaseEndTag = url.length();
+    }
+    return new URLLocation(databaseStartTag + 1, databaseEndTag);
+  }
+
+  @Override
+  public ConnectionInfo parse(String url) {
+    URLLocation location = fetchDatabaseHostsIndexRange(url);
+    String hosts = url.substring(location.startIndex(), location.endIndex());
+    String[] hostSegment = hosts.split(",");
+    if (hostSegment.length > 1) {
+      StringBuilder sb = new StringBuilder();
+      for (String host : hostSegment) {
+        if (host.split(":").length == 1) {
+          sb.append(host + ":" + DEFAULT_PORT + ",");
         } else {
-            String[] hostAndPort = hostSegment[0].split(":");
-            if (hostAndPort.length != 1) {
-                return new ConnectionInfo.Builder(hostAndPort[0], Integer.valueOf(hostAndPort[1])).dbType(DB_TYPE).dbInstance(fetchDatabaseNameFromURL(url, location.endIndex())).build();
-            } else {
-
-                return new ConnectionInfo.Builder(hostAndPort[0], DEFAULT_PORT).dbType(DB_TYPE).dbInstance(fetchDatabaseNameFromURL(url, location.endIndex())).build();
-            }
+          sb.append(host + ",");
         }
+      }
+      return new ConnectionInfo.Builder(sb.toString()).dbType(DB_TYPE)
+          .dbInstance(fetchDatabaseNameFromURL(url)).build();
+    } else {
+      String[] hostAndPort = hostSegment[0].split(":");
+      if (hostAndPort.length != 1) {
+        return new ConnectionInfo.Builder(hostAndPort[0], Integer.valueOf(hostAndPort[1]))
+            .dbType(DB_TYPE).dbInstance(fetchDatabaseNameFromURL(url, location.endIndex())).build();
+      } else {
+
+        return new ConnectionInfo.Builder(hostAndPort[0], DEFAULT_PORT).dbType(DB_TYPE)
+            .dbInstance(fetchDatabaseNameFromURL(url, location.endIndex())).build();
+      }
     }
+  }
 
 }

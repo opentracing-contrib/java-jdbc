@@ -14,19 +14,19 @@
 package io.opentracing.contrib.jdbc.parser;
 
 public class URLLocation {
-    private final int startIndex;
-    private final int endIndex;
+  private final int startIndex;
+  private final int endIndex;
 
-    public URLLocation(int startIndex, int endIndex) {
-        this.startIndex = startIndex;
-        this.endIndex = endIndex;
-    }
+  public URLLocation(int startIndex, int endIndex) {
+    this.startIndex = startIndex;
+    this.endIndex = endIndex;
+  }
 
-    public int startIndex() {
-        return startIndex;
-    }
+  public int startIndex() {
+    return startIndex;
+  }
 
-    public int endIndex() {
-        return endIndex;
-    }
+  public int endIndex() {
+    return endIndex;
+  }
 }

@@ -16,5 +16,5 @@ package io.opentracing.contrib.jdbc.parser;
 import io.opentracing.contrib.jdbc.ConnectionInfo;
 
 public interface ConnectionURLParser {
-    ConnectionInfo parse(final String url);
+  ConnectionInfo parse(final String url);
 }

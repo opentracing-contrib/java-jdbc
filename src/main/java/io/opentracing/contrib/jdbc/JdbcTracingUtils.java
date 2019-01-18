@@ -30,8 +30,7 @@ class JdbcTracingUtils {
   static final String COMPONENT_NAME = "java-jdbc";
 
   /**
-   * Opentracing standard tag
-   * https://github.com/opentracing/specification/blob/master/semantic_conventions.md
+   * Opentracing standard tag https://github.com/opentracing/specification/blob/master/semantic_conventions.md
    */
   static final StringTag PEER_ADDRESS = new StringTag("peer.address");
 

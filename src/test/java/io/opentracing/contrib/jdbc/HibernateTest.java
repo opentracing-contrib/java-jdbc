@@ -246,11 +246,11 @@ public class HibernateTest {
     List<MockSpan> finishedSpans = mockTracer.finishedSpans();
     assertEquals(7, finishedSpans.size());
 
-    checkSpans(finishedSpans,"hibernate");
+    checkSpans(finishedSpans, "hibernate");
     assertNull(mockTracer.activeSpan());
   }
 
-  private void checkSpans(List<MockSpan> mockSpans,String dbInstance) {
+  private void checkSpans(List<MockSpan> mockSpans, String dbInstance) {
     for (MockSpan mockSpan : mockSpans) {
       assertEquals(Tags.SPAN_KIND_CLIENT, mockSpan.tags().get(Tags.SPAN_KIND.getKey()));
       assertEquals(JdbcTracingUtils.COMPONENT_NAME, mockSpan.tags().get(Tags.COMPONENT.getKey()));
@@ -258,7 +258,6 @@ public class HibernateTest {
 
       assertEquals(dbInstance, mockSpan.tags().get(Tags.DB_INSTANCE.getKey()));
       assertEquals("localhost:-1", mockSpan.tags().get("peer.address"));
-
 
       assertNotNull(mockSpan.tags().get(Tags.DB_STATEMENT.getKey()));
       assertEquals(0, mockSpan.generatedErrors().size());
