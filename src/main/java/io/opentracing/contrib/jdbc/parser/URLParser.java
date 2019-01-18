@@ -40,12 +40,20 @@ public class URLParser {
      * @return
      */
     public static ConnectionInfo parser(String url) {
+        if (null == url){
+            return ConnectionInfo.UNKNOWN_CONNECTION_INFO;
+        }
         String lowerCaseUrl = url.toLowerCase();
         ConnectionURLParser parser = findURLParser(lowerCaseUrl);
         if (parser == null) {
             return ConnectionInfo.UNKNOWN_CONNECTION_INFO;
         }
-        return parser.parse(url);
+        try {
+            return parser.parse(url);
+        }catch (Exception e){
+            // TODO  log.error or do nothing
+        }
+        return ConnectionInfo.UNKNOWN_CONNECTION_INFO;
     }
 
     private static ConnectionURLParser findURLParser(String lowerCaseUrl) {
@@ -58,17 +66,7 @@ public class URLParser {
     }
 
     /**
-     * Determine if urlPrefix is registered
-     *
-     * @param urlPrefix
-     * @return
-     */
-    public static boolean isRegistered(String urlPrefix) {
-        return parserRegister.containsKey(urlPrefix.toLowerCase());
-    }
-
-    /**
-     * register new ConnectionURLParser.urlPrefix is required to be not registered
+     * register new ConnectionURLParser. Can override existing parser.
      *
      * @param urlPrefix
      * @param parser
@@ -77,23 +75,6 @@ public class URLParser {
         if (null == urlPrefix || parser == null) {
             throw new IllegalArgumentException("urlPrefix and parser can not be null");
         }
-        String lowerCaseUrlPrefix = urlPrefix.toLowerCase();
-        if (parserRegister.containsKey(lowerCaseUrlPrefix)) {
-            throw new IllegalArgumentException(urlPrefix + " is already registered");
-        }
-        parserRegister.put(lowerCaseUrlPrefix, parser);
-    }
-
-    /**
-     * register new ConnectionURLParser.When urlPrefix is registered,no exception occurs
-     *
-     * @param urlPrefix
-     * @param parser
-     */
-    public static void safeRegisterConnectionParser(String urlPrefix, ConnectionURLParser parser) {
-        if (isRegistered(urlPrefix)) {
-            return;
-        }
-        registerConnectionParser(urlPrefix, parser);
+        parserRegister.put(urlPrefix.toLowerCase(), parser);
     }
 }
