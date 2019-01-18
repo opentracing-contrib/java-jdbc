@@ -15,19 +15,30 @@ package io.opentracing.contrib.jdbc;
 
 public class ConnectionInfo {
 
+  public static ConnectionInfo UNKNOWN_CONNECTION_INFO = new Builder("unknown_peer").dbType("unknown_type").dbInstance("unknown_instance").build();
+
   private final String dbType;
   private final String dbUser;
   private final String dbInstance;
-  private final String dbIp;
-  private final Integer dbPort;
+  private final String dbPeer;
 
-  private ConnectionInfo(String dbType, String dbUser, String dbInstance, String dbIp,
+  private ConnectionInfo(String dbType, String dbUser, String dbInstance, String dbHost,
       Integer dbPort) {
     this.dbType = dbType;
     this.dbUser = dbUser;
     this.dbInstance = dbInstance;
-    this.dbIp = dbIp;
-    this.dbPort = dbPort;
+    if (dbHost != null && dbPort != null){
+      this.dbPeer = dbHost + ":" +dbPort;
+    }else{
+      this.dbPeer = "";
+    }
+  }
+
+  private ConnectionInfo(String dbType, String dbUser, String dbInstance, String dbPeer) {
+    this.dbType = dbType;
+    this.dbUser = dbUser;
+    this.dbInstance = dbInstance;
+    this.dbPeer = dbPeer;
   }
 
   public String getDbType() {
@@ -42,22 +53,25 @@ public class ConnectionInfo {
     return dbInstance;
   }
 
-  public String getDbIp() {
-    return dbIp;
-  }
-
-  public Integer getDbPort() {
-    return dbPort;
+  public String getDbPeer() {
+    return dbPeer;
   }
 
   public static class Builder {
     private String dbType;
     private String dbUser;
     private String dbInstance;
-    private String dbIp;
+    private String dbHost;
     private Integer dbPort;
+    private String dbPeer;
 
-    public Builder() {
+    public Builder(String dbPeer) {
+      this.dbPeer = dbPeer;
+    }
+
+    public Builder(String dbHost,Integer dbPort) {
+      this.dbHost = dbHost;
+      this.dbPort = dbPort;
     }
 
     public Builder dbType(String dbType) {
@@ -75,18 +89,11 @@ public class ConnectionInfo {
       return this;
     }
 
-    public Builder dbIp(String dbIp) {
-      this.dbIp = dbIp;
-      return this;
-    }
-
-    public Builder dbPort(Integer dbPort) {
-      this.dbPort = dbPort;
-      return this;
-    }
-
     public ConnectionInfo build() {
-      return new ConnectionInfo(this.dbType, this.dbUser, this.dbInstance, this.dbIp, this.dbPort);
+      if (this.dbPeer != null && !dbPeer.isEmpty()){
+        return new ConnectionInfo(this.dbType, this.dbUser, this.dbInstance, this.dbPeer);
+      }
+      return new ConnectionInfo(this.dbType, this.dbUser, this.dbInstance, this.dbHost, this.dbPort);
     }
 
   }

@@ -17,6 +17,7 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.noop.NoopScopeManager.NoopScope;
+import io.opentracing.tag.StringTag;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
 import java.util.HashMap;
@@ -27,6 +28,12 @@ import java.util.Set;
 class JdbcTracingUtils {
 
   static final String COMPONENT_NAME = "java-jdbc";
+
+  /**
+   * Opentracing standard tag
+   * https://github.com/opentracing/specification/blob/master/semantic_conventions.md
+   */
+  static final StringTag PEER_ADDRESS = new StringTag("peer.address");
 
   static Scope buildScope(String operationName,
       String sql,
@@ -65,17 +72,14 @@ class JdbcTracingUtils {
     if (connectionInfo.getDbType() != null) {
       Tags.DB_TYPE.set(span, connectionInfo.getDbType());
     }
-    if (connectionInfo.getDbIp() != null) {
-      Tags.PEER_HOST_IPV4.set(span, connectionInfo.getDbIp());
+    if (connectionInfo.getDbPeer() != null) {
+      PEER_ADDRESS.set(span, connectionInfo.getDbPeer());
     }
     if (connectionInfo.getDbInstance() != null) {
       Tags.DB_INSTANCE.set(span, connectionInfo.getDbInstance());
     }
     if (connectionInfo.getDbUser() != null) {
       Tags.DB_USER.set(span, connectionInfo.getDbUser());
-    }
-    if (connectionInfo.getDbPort() != null) {
-      Tags.PEER_PORT.set(span, connectionInfo.getDbPort());
     }
   }
 
@@ -88,7 +92,7 @@ class JdbcTracingUtils {
   }
 
   private static Map<String, Object> errorLogs(Throwable throwable) {
-    Map<String, Object> errorLogs = new HashMap<>(2);
+    Map<String, Object> errorLogs = new HashMap<>(3);
     errorLogs.put("event", Tags.ERROR.getKey());
     errorLogs.put("error.object", throwable);
     return errorLogs;
