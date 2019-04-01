@@ -13,10 +13,9 @@
  */
 package io.opentracing.contrib.jdbc;
 
-import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
-import io.opentracing.noop.NoopScopeManager.NoopScope;
+import io.opentracing.noop.NoopSpan;
 import io.opentracing.tag.StringTag;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracer;
@@ -34,7 +33,7 @@ class JdbcTracingUtils {
    */
   static final StringTag PEER_ADDRESS = new StringTag("peer.address");
 
-  static Scope buildScope(String operationName,
+  static Span buildSpan(String operationName,
       String sql,
       ConnectionInfo connectionInfo,
       boolean withActiveSpanOnly,
@@ -42,21 +41,21 @@ class JdbcTracingUtils {
       Tracer tracer) {
     Tracer currentTracer = getNullsafeTracer(tracer);
     if (withActiveSpanOnly && currentTracer.activeSpan() == null) {
-      return NoopScope.INSTANCE;
+      return NoopSpan.INSTANCE;
     } else if (ignoredStatements != null && ignoredStatements.contains(sql)) {
-      return NoopScope.INSTANCE;
+      return NoopSpan.INSTANCE;
     }
 
     Tracer.SpanBuilder spanBuilder = currentTracer.buildSpan(operationName)
         .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT);
 
-    Scope scope = spanBuilder.startActive(true);
-    decorate(scope.span(), sql, connectionInfo);
+    Span span = spanBuilder.start();
+    decorate(span, sql, connectionInfo);
 
-    return scope;
+    return span;
   }
 
-  private static Tracer getNullsafeTracer(final Tracer tracer) {
+  static Tracer getNullsafeTracer(final Tracer tracer) {
     if (tracer == null) {
       return GlobalTracer.get();
     }

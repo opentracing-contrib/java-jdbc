@@ -14,9 +14,11 @@
 package io.opentracing.contrib.jdbc;
 
 
-import static io.opentracing.contrib.jdbc.JdbcTracingUtils.buildScope;
+import static io.opentracing.contrib.jdbc.JdbcTracingUtils.buildSpan;
+import static io.opentracing.contrib.jdbc.JdbcTracingUtils.getNullsafeTracer;
 
 import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.Tracer;
 import java.io.InputStream;
 import java.io.Reader;
@@ -69,29 +71,29 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
 
   @Override
   public ResultSet executeQuery() throws SQLException {
-    Scope scope = buildScope("Query", query, connectionInfo, withActiveSpanOnly, ignoredQueries,
+    Span span = buildSpan("Query", query, connectionInfo, withActiveSpanOnly, ignoredQueries,
         tracer);
-    try {
+    try (Scope ignored = getNullsafeTracer(tracer).activateSpan(span)) {
       return preparedStatement.executeQuery();
     } catch (Exception e) {
-      JdbcTracingUtils.onError(e, scope.span());
+      JdbcTracingUtils.onError(e, span);
       throw e;
     } finally {
-      scope.close();
+      span.finish();
     }
   }
 
   @Override
   public int executeUpdate() throws SQLException {
-    Scope scope = buildScope("Update", query, connectionInfo, withActiveSpanOnly, ignoredQueries,
+    Span span = buildSpan("Update", query, connectionInfo, withActiveSpanOnly, ignoredQueries,
         tracer);
-    try {
+    try (Scope ignored = getNullsafeTracer(tracer).activateSpan(span)) {
       return preparedStatement.executeUpdate();
     } catch (Exception e) {
-      JdbcTracingUtils.onError(e, scope.span());
+      JdbcTracingUtils.onError(e, span);
       throw e;
     } finally {
-      scope.close();
+      span.finish();
     }
   }
 
@@ -198,15 +200,15 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
 
   @Override
   public boolean execute() throws SQLException {
-    Scope scope = buildScope("Execute", query, connectionInfo, withActiveSpanOnly,
+    Span span = buildSpan("Execute", query, connectionInfo, withActiveSpanOnly,
         ignoredQueries, tracer);
-    try {
+    try (Scope ignored = getNullsafeTracer(tracer).activateSpan(span)) {
       return preparedStatement.execute();
     } catch (Exception e) {
-      JdbcTracingUtils.onError(e, scope.span());
+      JdbcTracingUtils.onError(e, span);
       throw e;
     } finally {
-      scope.close();
+      span.finish();
     }
   }
 
