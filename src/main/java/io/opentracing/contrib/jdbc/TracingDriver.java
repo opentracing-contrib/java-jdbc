@@ -13,8 +13,13 @@
  */
 package io.opentracing.contrib.jdbc;
 
+
+import io.opentracing.Scope;
+import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.jdbc.parser.URLParser;
+import io.opentracing.tag.Tags;
+
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -28,6 +33,8 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static io.opentracing.contrib.jdbc.JdbcTracingUtils.*;
 
 public class TracingDriver implements Driver {
 
@@ -66,10 +73,21 @@ public class TracingDriver implements Driver {
 
     // find the real driver for the URL
     Driver wrappedDriver = findDriver(realUrl);
-    Connection connection = wrappedDriver.connect(realUrl, info);
+
+    boolean withActiveSpanOnly = url.contains(WITH_ACTIVE_SPAN_ONLY);
+
 
     ConnectionInfo connectionInfo = URLParser.parser(realUrl);
-    return new TracingConnection(connection, connectionInfo, url.contains(WITH_ACTIVE_SPAN_ONLY),
+    Span span  = buildSpan("AcquireConnection", "", connectionInfo, withActiveSpanOnly, Collections.<String>emptySet(), getNullsafeTracer(tracer));
+    Connection connection;
+    try(Scope ignored = getNullsafeTracer(tracer).activateSpan(span)) {
+      connection = wrappedDriver.connect(realUrl, info);
+    } finally {
+      span.finish();
+    }
+
+
+    return new TracingConnection(connection, connectionInfo, withActiveSpanOnly,
         extractIgnoredStatements(url), tracer);
   }
 

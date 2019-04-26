@@ -75,7 +75,7 @@ public class HibernateTest {
     assertNotNull(employee.id);
 
     List<MockSpan> finishedSpans = mockTracer.finishedSpans();
-    assertEquals(8, finishedSpans.size());
+    assertEquals(9, finishedSpans.size());
 
     checkSpans(finishedSpans, "jpa");
     assertNull(mockTracer.activeSpan());
@@ -119,7 +119,7 @@ public class HibernateTest {
     }
 
     List<MockSpan> spans = mockTracer.finishedSpans();
-    assertEquals(11, spans.size());
+    assertEquals(12, spans.size());
     checkSameTrace(spans);
     assertNull(mockTracer.activeSpan());
   }
@@ -142,7 +142,7 @@ public class HibernateTest {
     }
 
     List<MockSpan> spans = mockTracer.finishedSpans();
-    assertEquals(11, spans.size());
+    assertEquals(12, spans.size());
     checkSameTrace(spans);
     assertNull(mockTracer.activeSpan());
   }
@@ -162,7 +162,7 @@ public class HibernateTest {
     assertNotNull(employee.id);
 
     List<MockSpan> finishedSpans = mockTracer.finishedSpans();
-    assertEquals(8, finishedSpans.size());
+    assertEquals(9, finishedSpans.size());
 
     checkSpans(finishedSpans, "hibernate");
     assertNull(mockTracer.activeSpan());
@@ -203,7 +203,7 @@ public class HibernateTest {
     }
 
     List<MockSpan> spans = mockTracer.finishedSpans();
-    assertEquals(11, spans.size());
+    assertEquals(12, spans.size());
     checkSameTrace(spans);
     assertNull(mockTracer.activeSpan());
   }
@@ -223,7 +223,7 @@ public class HibernateTest {
     }
 
     List<MockSpan> spans = mockTracer.finishedSpans();
-    assertEquals(11, spans.size());
+    assertEquals(12, spans.size());
     checkSameTrace(spans);
     assertNull(mockTracer.activeSpan());
   }
@@ -244,7 +244,7 @@ public class HibernateTest {
     assertNotNull(employee.id);
 
     List<MockSpan> finishedSpans = mockTracer.finishedSpans();
-    assertEquals(7, finishedSpans.size());
+    assertEquals(8, finishedSpans.size());
 
     checkSpans(finishedSpans, "hibernate");
     assertNull(mockTracer.activeSpan());

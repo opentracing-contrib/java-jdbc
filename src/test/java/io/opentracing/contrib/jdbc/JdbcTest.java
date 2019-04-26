@@ -50,7 +50,7 @@ public class JdbcTest {
     connection.close();
 
     List<MockSpan> spans = mockTracer.finishedSpans();
-    assertEquals(1, spans.size());
+    assertEquals(2, spans.size());
   }
 
   @Test
@@ -64,8 +64,8 @@ public class JdbcTest {
     connection.close();
 
     List<MockSpan> spans = mockTracer.finishedSpans();
-    assertEquals(1, spans.size());
-    MockSpan span = spans.get(0);
+    assertEquals(2, spans.size());
+    MockSpan span = spans.get(1);
     assertTrue(span.tags().containsKey(Tags.ERROR.getKey()));
   }
 }
