@@ -42,6 +42,8 @@ public class SpringTest {
   private static final MockTracer mockTracer = new MockTracer(new ThreadLocalScopeManager(),
       MockTracer.Propagator.TEXT_MAP);
 
+  private final int DB_CONNECTION_SPAN_COUNT = 2;
+
   @BeforeClass
   public static void init() {
     GlobalTracerTestUtil.setGlobalTracerUnconditionally(mockTracer);
@@ -77,9 +79,9 @@ public class SpringTest {
     dataSource.close();
 
     List<MockSpan> spans = mockTracer.finishedSpans();
-    assertEquals(2, spans.size());
+    assertEquals(DB_CONNECTION_SPAN_COUNT + 2, spans.size());
 
-    for (MockSpan span : spans) {
+    for (MockSpan span : spans.subList(DB_CONNECTION_SPAN_COUNT, spans.size()-1)) {
       assertEquals(Tags.SPAN_KIND_CLIENT, span.tags().get(Tags.SPAN_KIND.getKey()));
       assertEquals(JdbcTracingUtils.COMPONENT_NAME, span.tags().get(Tags.COMPONENT.getKey()));
       assertThat(span.tags().get(Tags.DB_STATEMENT.getKey()).toString()).isNotEmpty();
@@ -102,8 +104,8 @@ public class SpringTest {
     dataSource.close();
 
     List<MockSpan> finishedSpans = mockTracer.finishedSpans();
-    assertEquals(1, finishedSpans.size());
-    MockSpan mockSpan = finishedSpans.get(0);
+    assertEquals(DB_CONNECTION_SPAN_COUNT + 1, finishedSpans.size());
+    MockSpan mockSpan = finishedSpans.get(DB_CONNECTION_SPAN_COUNT);
 
     assertEquals(Tags.SPAN_KIND_CLIENT, mockSpan.tags().get(Tags.SPAN_KIND.getKey()));
     assertEquals(JdbcTracingUtils.COMPONENT_NAME, mockSpan.tags().get(Tags.COMPONENT.getKey()));
@@ -143,7 +145,7 @@ public class SpringTest {
     }
 
     List<MockSpan> spans = mockTracer.finishedSpans();
-    assertEquals(3, spans.size());
+    assertEquals(DB_CONNECTION_SPAN_COUNT + 3, spans.size());
 
     checkSameTrace(spans);
   }
@@ -161,7 +163,7 @@ public class SpringTest {
     }
 
     List<MockSpan> spans = mockTracer.finishedSpans();
-    assertEquals(3, spans.size());
+    assertEquals(DB_CONNECTION_SPAN_COUNT + 3, spans.size());
 
     checkSameTrace(spans);
   }
@@ -181,7 +183,7 @@ public class SpringTest {
     dataSource.close();
 
     List<MockSpan> finishedSpans = mockTracer.finishedSpans();
-    assertEquals(1, finishedSpans.size());
+    assertEquals(DB_CONNECTION_SPAN_COUNT + 1, finishedSpans.size());
   }
 
   private BasicDataSource getDataSource(boolean traceWithActiveSpanOnly) {
