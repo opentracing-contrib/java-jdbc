@@ -195,7 +195,6 @@ public class SpringTest {
     String ignoreForTracing = TestUtil.buildIgnoredString(ignored);
 
     BasicDataSource dataSource = new BasicDataSource();
-    dataSource.setDriverClassName("io.opentracing.contrib.jdbc.TracingDriver");
     dataSource
         .setUrl("jdbc:tracing:h2:mem:spring?" + ignoreForTracing +
             "traceWithActiveSpanOnly=" + traceWithActiveSpanOnly);
