@@ -171,7 +171,7 @@ public class TracingDriver implements Driver {
     return results;
   }
 
-  private Tracer getTracer() {
+  Tracer getTracer() {
     if (tracer == null) {
       return GlobalTracer.get();
     }
