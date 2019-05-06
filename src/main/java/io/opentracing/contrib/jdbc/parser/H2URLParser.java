@@ -24,6 +24,10 @@ public class H2URLParser extends AbstractURLParser {
    */
   private static final String MEMORY_MODE_FLAG = "mem";
   /**
+   * Flag that H2 running with tcp mode.
+   */
+  private static final String TCP_MODE_FLAG = "h2:tcp";
+  /**
    * Flag that H2 running with file mode.
    */
   private static final String FILE_MODE_FLAG = "file";
@@ -107,6 +111,9 @@ public class H2URLParser extends AbstractURLParser {
    * @return range index that the database name.
    */
   private int[] fetchDatabaseNameRangeIndexFromURLForH2ImplicitFileMode(String url) {
+    if (url.contains(TCP_MODE_FLAG)) {
+      return null;
+    }
     int fileLabelIndex = url.indexOf(IMPLICIT_FILE_MODE_FLAG);
     int parameterLabelIndex = url.indexOf(";", fileLabelIndex);
     if (parameterLabelIndex == -1) {
@@ -139,4 +146,6 @@ public class H2URLParser extends AbstractURLParser {
       return null;
     }
   }
+
+
 }
