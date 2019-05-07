@@ -137,6 +137,14 @@ public class URLParserTest {
   }
 
   @Test
+  public void testParseH2JDBCURLWithImplicitFile() {
+    ConnectionInfo connectionInfo = URLParser.parser("jdbc:h2:c:/data/sample");
+    assertEquals(H2, connectionInfo.getDbType());
+    assertEquals("c:/data/sample", connectionInfo.getDbInstance());
+    assertEquals("localhost:-1", connectionInfo.getDbPeer());
+  }
+
+  @Test
   public void testParseH2JDBCURLWithMemoryMode() {
     ConnectionInfo connectionInfo = URLParser.parser("jdbc:h2:mem:test_mem");
 
