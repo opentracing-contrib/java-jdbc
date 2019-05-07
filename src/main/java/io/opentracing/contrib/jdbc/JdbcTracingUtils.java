@@ -18,7 +18,6 @@ import io.opentracing.Tracer;
 import io.opentracing.noop.NoopSpan;
 import io.opentracing.tag.StringTag;
 import io.opentracing.tag.Tags;
-import io.opentracing.util.GlobalTracer;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -39,27 +38,19 @@ class JdbcTracingUtils {
       boolean withActiveSpanOnly,
       Set<String> ignoredStatements,
       Tracer tracer) {
-    Tracer currentTracer = getNullsafeTracer(tracer);
-    if (withActiveSpanOnly && currentTracer.activeSpan() == null) {
+    if (withActiveSpanOnly && tracer.activeSpan() == null) {
       return NoopSpan.INSTANCE;
     } else if (ignoredStatements != null && ignoredStatements.contains(sql)) {
       return NoopSpan.INSTANCE;
     }
 
-    Tracer.SpanBuilder spanBuilder = currentTracer.buildSpan(operationName)
+    Tracer.SpanBuilder spanBuilder = tracer.buildSpan(operationName)
         .withTag(Tags.SPAN_KIND.getKey(), Tags.SPAN_KIND_CLIENT);
 
     Span span = spanBuilder.start();
     decorate(span, sql, connectionInfo);
 
     return span;
-  }
-
-  static Tracer getNullsafeTracer(final Tracer tracer) {
-    if (tracer == null) {
-      return GlobalTracer.get();
-    }
-    return tracer;
   }
 
   private static void decorate(Span span,

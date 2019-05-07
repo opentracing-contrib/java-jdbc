@@ -81,7 +81,7 @@ public class SpringTest {
     List<MockSpan> spans = mockTracer.finishedSpans();
     assertEquals(DB_CONNECTION_SPAN_COUNT + 2, spans.size());
 
-    for (MockSpan span : spans.subList(DB_CONNECTION_SPAN_COUNT, spans.size()-1)) {
+    for (MockSpan span : spans.subList(DB_CONNECTION_SPAN_COUNT, spans.size() - 1)) {
       assertEquals(Tags.SPAN_KIND_CLIENT, span.tags().get(Tags.SPAN_KIND.getKey()));
       assertEquals(JdbcTracingUtils.COMPONENT_NAME, span.tags().get(Tags.COMPONENT.getKey()));
       assertThat(span.tags().get(Tags.DB_STATEMENT.getKey()).toString()).isNotEmpty();
