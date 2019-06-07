@@ -32,10 +32,10 @@ public class TracingStatement implements Statement {
   private final Statement statement;
   private final String query;
   private final ArrayList<String> batchCommands = new ArrayList<>();
-  private final ConnectionInfo connectionInfo;
-  private final boolean withActiveSpanOnly;
-  private final Set<String> ignoredStatements;
-  private final Tracer tracer;
+  final ConnectionInfo connectionInfo;
+  final boolean withActiveSpanOnly;
+  final Set<String> ignoredStatements;
+  final Tracer tracer;
 
   TracingStatement(Statement statement, ConnectionInfo connectionInfo, boolean withActiveSpanOnly,
       Set<String> ignoredStatements, Tracer tracer) {
