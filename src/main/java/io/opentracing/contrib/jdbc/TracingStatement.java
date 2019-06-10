@@ -363,6 +363,15 @@ public class TracingStatement implements Statement {
     return statement.isWrapperFor(iface);
   }
 
+  public String getQuery() {
+    return query;
+  }
+
+  @Override
+  public String toString() {
+    return getQuery();
+  }
+
   private Span buildSpanForBatch() {
     StringBuilder sqlBuilder = new StringBuilder();
     if (query != null) {
