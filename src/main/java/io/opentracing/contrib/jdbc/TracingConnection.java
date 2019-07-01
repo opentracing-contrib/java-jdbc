@@ -67,7 +67,7 @@ public class TracingConnection implements Connection {
   @Override
   public CallableStatement prepareCall(String sql) throws SQLException {
     return new TracingCallableStatement(connection.prepareCall(sql), sql, connectionInfo,
-        withActiveSpanOnly, ignoredStatements);
+        withActiveSpanOnly, ignoredStatements, tracer);
   }
 
   @Override
@@ -170,7 +170,7 @@ public class TracingConnection implements Connection {
       throws SQLException {
     return new TracingCallableStatement(
         connection.prepareCall(sql, resultSetType, resultSetConcurrency), sql, connectionInfo,
-        withActiveSpanOnly, ignoredStatements);
+        withActiveSpanOnly, ignoredStatements, tracer);
   }
 
   @Override
