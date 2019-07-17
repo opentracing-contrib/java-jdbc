@@ -18,7 +18,10 @@ import io.opentracing.contrib.jdbc.ConnectionInfo;
 public class MysqlURLParser extends AbstractURLParser {
 
   private static final int DEFAULT_PORT = 3306;
-  private static final String DB_TYPE = "mysql";
+
+  protected String dbType() {
+    return "mysql";
+  }
 
   @Override
   protected URLLocation fetchDatabaseHostsIndexRange(String url) {
@@ -74,16 +77,16 @@ public class MysqlURLParser extends AbstractURLParser {
           sb.append(host + ",");
         }
       }
-      return new ConnectionInfo.Builder(sb.toString()).dbType(DB_TYPE)
+      return new ConnectionInfo.Builder(sb.toString()).dbType(dbType())
           .dbInstance(fetchDatabaseNameFromURL(url)).build();
     } else {
       String[] hostAndPort = hostSegment[0].split(":");
       if (hostAndPort.length != 1) {
         return new ConnectionInfo.Builder(hostAndPort[0], Integer.valueOf(hostAndPort[1]))
-            .dbType(DB_TYPE).dbInstance(fetchDatabaseNameFromURL(url, location.endIndex())).build();
+            .dbType(dbType()).dbInstance(fetchDatabaseNameFromURL(url, location.endIndex())).build();
       } else {
 
-        return new ConnectionInfo.Builder(hostAndPort[0], DEFAULT_PORT).dbType(DB_TYPE)
+        return new ConnectionInfo.Builder(hostAndPort[0], DEFAULT_PORT).dbType(dbType())
             .dbInstance(fetchDatabaseNameFromURL(url, location.endIndex())).build();
       }
     }
