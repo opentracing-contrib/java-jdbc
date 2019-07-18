@@ -53,21 +53,29 @@ class JdbcTracingUtils {
     return span;
   }
 
-  private static void decorate(Span span,
-      String sql,
-      ConnectionInfo connectionInfo) {
+  private static boolean isNotEmpty(CharSequence s) {
+    return s != null && !"".contentEquals(s);
+  }
+
+  /**
+   * Add tags to span. Skip empty tags to avoid reported NPE in tracers.
+   */
+  private static void decorate(Span span, String sql, ConnectionInfo connectionInfo) {
     Tags.COMPONENT.set(span, COMPONENT_NAME);
-    Tags.DB_STATEMENT.set(span, sql);
-    if (connectionInfo.getDbType() != null) {
+
+    if (isNotEmpty(sql)) {
+      Tags.DB_STATEMENT.set(span, sql);
+    }
+    if (isNotEmpty(connectionInfo.getDbType())) {
       Tags.DB_TYPE.set(span, connectionInfo.getDbType());
     }
-    if (connectionInfo.getDbPeer() != null) {
+    if (isNotEmpty(connectionInfo.getDbPeer())) {
       PEER_ADDRESS.set(span, connectionInfo.getDbPeer());
     }
-    if (connectionInfo.getDbInstance() != null) {
+    if (isNotEmpty(connectionInfo.getDbInstance())) {
       Tags.DB_INSTANCE.set(span, connectionInfo.getDbInstance());
     }
-    if (connectionInfo.getDbUser() != null) {
+    if (isNotEmpty(connectionInfo.getDbUser())) {
       Tags.DB_USER.set(span, connectionInfo.getDbUser());
     }
   }

@@ -14,8 +14,10 @@
 package io.opentracing.contrib.jdbc;
 
 
+import static io.opentracing.contrib.jdbc.TestUtil.checkNoEmptyTags;
 import static io.opentracing.contrib.jdbc.TestUtil.checkSameTrace;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
@@ -251,6 +253,7 @@ public class HibernateTest {
   }
 
   private void checkSpans(List<MockSpan> mockSpans, String dbInstance) {
+    checkNoEmptyTags(mockSpans);
     for (MockSpan mockSpan : mockSpans) {
       assertEquals(Tags.SPAN_KIND_CLIENT, mockSpan.tags().get(Tags.SPAN_KIND.getKey()));
       assertEquals(JdbcTracingUtils.COMPONENT_NAME, mockSpan.tags().get(Tags.COMPONENT.getKey()));
@@ -259,7 +262,11 @@ public class HibernateTest {
       assertEquals(dbInstance, mockSpan.tags().get(Tags.DB_INSTANCE.getKey()));
       assertEquals("localhost:-1", mockSpan.tags().get("peer.address"));
 
-      assertNotNull(mockSpan.tags().get(Tags.DB_STATEMENT.getKey()));
+      final String sql = (String) mockSpan.tags().get(Tags.DB_STATEMENT.getKey());
+      if (sql != null) {
+        // empty sql should not be added to avoid NPE in tracers
+        assertFalse(sql.trim().isEmpty());
+      }
       assertEquals(0, mockSpan.generatedErrors().size());
     }
   }
