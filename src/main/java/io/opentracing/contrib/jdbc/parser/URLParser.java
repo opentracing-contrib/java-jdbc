@@ -26,6 +26,7 @@ public class URLParser {
   private static final String ORACLE_JDBC_URL_PREFIX = "jdbc:oracle";
   private static final String H2_JDBC_URL_PREFIX = "jdbc:h2";
   private static final String POSTGRESQL_JDBC_URL_PREFIX = "jdbc:postgresql";
+  private static final String MARIADB_JDBC_URL_PREFIX = "jdbc:mariadb";
   private static final Map<String, ConnectionURLParser> parserRegister = new LinkedHashMap<>();
 
   static {
@@ -34,6 +35,7 @@ public class URLParser {
     parserRegister.put(ORACLE_JDBC_URL_PREFIX, new OracleURLParser());
     parserRegister.put(H2_JDBC_URL_PREFIX, new H2URLParser());
     parserRegister.put(POSTGRESQL_JDBC_URL_PREFIX, new PostgreSQLURLParser());
+    parserRegister.put(MARIADB_JDBC_URL_PREFIX, new MariadbURLParser());
   }
 
   /**
