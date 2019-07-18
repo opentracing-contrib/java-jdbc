@@ -14,6 +14,7 @@
 package io.opentracing.contrib.jdbc;
 
 
+import static io.opentracing.contrib.jdbc.TestUtil.checkNoEmptyTags;
 import static io.opentracing.contrib.jdbc.TestUtil.checkSameTrace;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
@@ -92,6 +93,7 @@ public class SpringTest {
     }
 
     assertNull(mockTracer.activeSpan());
+    checkNoEmptyTags(spans);
   }
 
   @Test
@@ -117,6 +119,7 @@ public class SpringTest {
     assertEquals(0, mockSpan.generatedErrors().size());
 
     assertNull(mockTracer.activeSpan());
+    checkNoEmptyTags(finishedSpans);
   }
 
   @Test
@@ -130,6 +133,7 @@ public class SpringTest {
 
     List<MockSpan> finishedSpans = mockTracer.finishedSpans();
     assertEquals(0, finishedSpans.size());
+    checkNoEmptyTags(finishedSpans);
   }
 
   @Test
@@ -148,6 +152,7 @@ public class SpringTest {
     assertEquals(DB_CONNECTION_SPAN_COUNT + 3, spans.size());
 
     checkSameTrace(spans);
+    checkNoEmptyTags(spans);
   }
 
   @Test
@@ -166,6 +171,7 @@ public class SpringTest {
     assertEquals(DB_CONNECTION_SPAN_COUNT + 3, spans.size());
 
     checkSameTrace(spans);
+    checkNoEmptyTags(spans);
   }
 
   @Test
@@ -184,6 +190,7 @@ public class SpringTest {
 
     List<MockSpan> finishedSpans = mockTracer.finishedSpans();
     assertEquals(DB_CONNECTION_SPAN_COUNT + 1, finishedSpans.size());
+    checkNoEmptyTags(finishedSpans);
   }
 
   private BasicDataSource getDataSource(boolean traceWithActiveSpanOnly) {

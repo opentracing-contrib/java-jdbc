@@ -14,6 +14,7 @@
 package io.opentracing.contrib.jdbc;
 
 
+import static io.opentracing.contrib.jdbc.TestUtil.checkNoEmptyTags;
 import static io.opentracing.contrib.jdbc.TestUtil.checkSameTrace;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -252,6 +253,7 @@ public class HibernateTest {
   }
 
   private void checkSpans(List<MockSpan> mockSpans, String dbInstance) {
+    checkNoEmptyTags(mockSpans);
     for (MockSpan mockSpan : mockSpans) {
       assertEquals(Tags.SPAN_KIND_CLIENT, mockSpan.tags().get(Tags.SPAN_KIND.getKey()));
       assertEquals(JdbcTracingUtils.COMPONENT_NAME, mockSpan.tags().get(Tags.COMPONENT.getKey()));

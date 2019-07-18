@@ -14,10 +14,13 @@
 package io.opentracing.contrib.jdbc;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 import io.opentracing.mock.MockSpan;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map.Entry;
 
 class TestUtil {
 
@@ -25,6 +28,18 @@ class TestUtil {
     for (int i = 0; i < spans.size() - 1; i++) {
       assertEquals(spans.get(i).context().traceId(), spans.get(i + 1).context().traceId());
       assertEquals(spans.get(spans.size() - 1).context().spanId(), spans.get(i).parentId());
+    }
+  }
+
+  static void checkNoEmptyTags(List<MockSpan> spans) {
+    for (MockSpan span : spans) {
+      for (Entry<String, Object> entry : span.tags().entrySet()) {
+        assertNotNull(entry.getValue());
+        if (entry.getValue() instanceof String) {
+          String tagValue = (String) entry.getValue();
+          assertFalse(tagValue.trim().isEmpty());
+        }
+      }
     }
   }
 
