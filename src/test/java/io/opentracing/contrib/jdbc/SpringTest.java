@@ -25,7 +25,6 @@ import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracerTestUtil;
-import io.opentracing.util.ThreadLocalScopeManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -40,8 +39,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 
 public class SpringTest {
 
-  private static final MockTracer mockTracer = new MockTracer(new ThreadLocalScopeManager(),
-      MockTracer.Propagator.TEXT_MAP);
+  private static final MockTracer mockTracer = new MockTracer();
 
   private final int DB_CONNECTION_SPAN_COUNT = 2;
 
@@ -138,7 +136,8 @@ public class SpringTest {
 
   @Test
   public void spring_with_parent() throws Exception {
-    try (Scope ignored = mockTracer.buildSpan("parent").startActive(true)) {
+    final MockSpan parent = mockTracer.buildSpan("parent").start();
+    try (Scope ignored = mockTracer.activateSpan(parent)) {
       BasicDataSource dataSource = getDataSource(false);
 
       JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
@@ -147,6 +146,7 @@ public class SpringTest {
 
       dataSource.close();
     }
+    parent.finish();
 
     List<MockSpan> spans = mockTracer.finishedSpans();
     assertEquals(DB_CONNECTION_SPAN_COUNT + 3, spans.size());
@@ -157,7 +157,8 @@ public class SpringTest {
 
   @Test
   public void spring_with_parent_and_active_span_only() throws Exception {
-    try (Scope ignored = mockTracer.buildSpan("parent").startActive(true)) {
+    final MockSpan parent = mockTracer.buildSpan("parent").start();
+    try (Scope ignored = mockTracer.activateSpan(parent)) {
       BasicDataSource dataSource = getDataSource(true);
 
       JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
@@ -166,6 +167,7 @@ public class SpringTest {
 
       dataSource.close();
     }
+    parent.finish();
 
     List<MockSpan> spans = mockTracer.finishedSpans();
     assertEquals(DB_CONNECTION_SPAN_COUNT + 3, spans.size());

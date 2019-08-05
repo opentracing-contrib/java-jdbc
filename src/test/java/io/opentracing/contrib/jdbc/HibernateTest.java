@@ -28,7 +28,7 @@ import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracerTestUtil;
 import io.opentracing.util.ThreadLocalScopeManager;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -106,8 +106,8 @@ public class HibernateTest {
 
   @Test
   public void jpa_with_parent() {
-
-    try (Scope ignored = mockTracer.buildSpan("parent").startActive(true)) {
+    final MockSpan parent = mockTracer.buildSpan("parent").start();
+    try (Scope ignored = mockTracer.activateSpan(parent)) {
       EntityManagerFactory entityManagerFactory = Persistence.createEntityManagerFactory("jpa");
 
       EntityManager entityManager = entityManagerFactory.createEntityManager();
@@ -119,6 +119,7 @@ public class HibernateTest {
       entityManager.close();
       entityManagerFactory.close();
     }
+    parent.finish();
 
     List<MockSpan> spans = mockTracer.finishedSpans();
     assertEquals(12, spans.size());
@@ -128,8 +129,8 @@ public class HibernateTest {
 
   @Test
   public void jpa_with_parent_and_active_span_only() {
-
-    try (Scope ignored = mockTracer.buildSpan("parent").startActive(true)) {
+    final MockSpan parent = mockTracer.buildSpan("parent").start();
+    try (Scope ignored = mockTracer.activateSpan(parent)) {
       EntityManagerFactory entityManagerFactory = Persistence
           .createEntityManagerFactory("jpa_active_span_only");
 
@@ -142,6 +143,7 @@ public class HibernateTest {
       entityManager.close();
       entityManagerFactory.close();
     }
+    parent.finish();
 
     List<MockSpan> spans = mockTracer.finishedSpans();
     assertEquals(12, spans.size());
@@ -192,7 +194,8 @@ public class HibernateTest {
 
   @Test
   public void hibernate_with_parent() {
-    try (Scope ignored = mockTracer.buildSpan("parent").startActive(true)) {
+    final MockSpan parent = mockTracer.buildSpan("parent").start();
+    try (Scope ignored = mockTracer.activateSpan(parent)) {
       SessionFactory sessionFactory = createSessionFactory(false);
       Session session = sessionFactory.openSession();
 
@@ -203,6 +206,7 @@ public class HibernateTest {
       session.close();
       sessionFactory.close();
     }
+    parent.finish();
 
     List<MockSpan> spans = mockTracer.finishedSpans();
     assertEquals(12, spans.size());
@@ -212,7 +216,8 @@ public class HibernateTest {
 
   @Test
   public void hibernate_with_parent_and_active_span_only() {
-    try (Scope ignored = mockTracer.buildSpan("parent").startActive(true)) {
+    final MockSpan parent = mockTracer.buildSpan("parent").start();
+    try (Scope ignored = mockTracer.activateSpan(parent)) {
       SessionFactory sessionFactory = createSessionFactory(true);
       Session session = sessionFactory.openSession();
 
@@ -223,6 +228,7 @@ public class HibernateTest {
       session.close();
       sessionFactory.close();
     }
+    parent.finish();
 
     List<MockSpan> spans = mockTracer.finishedSpans();
     assertEquals(12, spans.size());
@@ -233,7 +239,7 @@ public class HibernateTest {
   @Test
   public void hibernate_with_ignored_statement() {
     SessionFactory sessionFactory = createSessionFactory(false,
-        Arrays.asList("insert into Employee (id) values (?)"));
+        Collections.singletonList("insert into Employee (id) values (?)"));
     Session session = sessionFactory.openSession();
 
     Employee employee = new Employee();
