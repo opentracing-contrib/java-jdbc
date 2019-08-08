@@ -22,6 +22,7 @@ public class ConnectionInfo {
   private final String dbUser;
   private final String dbInstance;
   private final String dbPeer;
+  private final String dbPeerService;
 
   private ConnectionInfo(String dbType, String dbUser, String dbInstance, String dbHost,
       Integer dbPort) {
@@ -33,6 +34,8 @@ public class ConnectionInfo {
     } else {
       this.dbPeer = "";
     }
+
+    this.dbPeerService = makePeerService();
   }
 
   private ConnectionInfo(String dbType, String dbUser, String dbInstance, String dbPeer) {
@@ -40,6 +43,20 @@ public class ConnectionInfo {
     this.dbUser = dbUser;
     this.dbInstance = dbInstance;
     this.dbPeer = dbPeer;
+
+    this.dbPeerService = makePeerService();
+  }
+
+  /**
+   * Make a unique serviceName that could be used in dependency diagram.
+   * @return
+   */
+  private String makePeerService() {
+    if (null != dbInstance && !dbInstance.isEmpty()) {
+      return dbInstance + "[" + dbType + "(" + dbPeer + ")]";
+    } else {
+      return  dbType + "(" + dbPeer + ")";
+    }
   }
 
   public String getDbType() {
@@ -56,6 +73,10 @@ public class ConnectionInfo {
 
   public String getDbPeer() {
     return dbPeer;
+  }
+
+  public String getPeerService() {
+    return dbPeerService;
   }
 
   public static class Builder {

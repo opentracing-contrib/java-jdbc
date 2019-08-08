@@ -78,6 +78,9 @@ class JdbcTracingUtils {
     if (isNotEmpty(connectionInfo.getDbUser())) {
       Tags.DB_USER.set(span, connectionInfo.getDbUser());
     }
+    if (isNotEmpty(connectionInfo.getPeerService())) {
+      Tags.PEER_SERVICE.set(span, connectionInfo.getPeerService());
+    }
   }
 
   static void onError(Throwable throwable, Span span) {
