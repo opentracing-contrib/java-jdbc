@@ -31,6 +31,7 @@ public class URLParserTest {
     assertEquals(MYSQL, connectionInfo.getDbType());
     assertEquals("test", connectionInfo.getDbInstance());
     assertEquals("primaryhost:3306", connectionInfo.getDbPeer());
+    assertEquals("test[mysql(primaryhost:3306)]", connectionInfo.getPeerService());
   }
 
   @Test
@@ -39,6 +40,7 @@ public class URLParserTest {
     assertEquals(MYSQL, connectionInfo.getDbType());
     assertEquals("", connectionInfo.getDbInstance());
     assertEquals("primaryhost:3306", connectionInfo.getDbPeer());
+    assertEquals("mysql(primaryhost:3306)", connectionInfo.getPeerService());
   }
 
   @Test
@@ -48,6 +50,7 @@ public class URLParserTest {
     assertEquals(MYSQL, connectionInfo.getDbType());
     assertEquals("test", connectionInfo.getDbInstance());
     assertEquals("primaryhost:3307", connectionInfo.getDbPeer());
+    assertEquals("test[mysql(primaryhost:3307)]", connectionInfo.getPeerService());
   }
 
   @Test
@@ -58,6 +61,8 @@ public class URLParserTest {
     assertEquals("test", connectionInfo.getDbInstance());
     assertEquals("primaryhost:3307,secondaryhost1:3306,secondaryhost2:3306,",
         connectionInfo.getDbPeer());
+    assertEquals("test[mysql(primaryhost:3307,secondaryhost1:3306,secondaryhost2:3306,)]",
+        connectionInfo.getPeerService());
   }
 
   @Test
@@ -67,6 +72,8 @@ public class URLParserTest {
     assertEquals(MYSQL, connectionInfo.getDbType());
     assertEquals("test", connectionInfo.getDbInstance());
     assertEquals("master:3306,slave1:3306,slave2:3306,slave3:3306,", connectionInfo.getDbPeer());
+    assertEquals("test[mysql(master:3306,slave1:3306,slave2:3306,slave3:3306,)]",
+        connectionInfo.getPeerService());
   }
 
   @Test
@@ -75,6 +82,7 @@ public class URLParserTest {
     assertEquals(ORACLE, connectionInfo.getDbType());
     assertEquals("orcl", connectionInfo.getDbInstance());
     assertEquals("localhost:1521", connectionInfo.getDbPeer());
+    assertEquals("orcl[oracle(localhost:1521)]", connectionInfo.getPeerService());
   }
 
   @Test
@@ -83,6 +91,7 @@ public class URLParserTest {
     assertEquals(ORACLE, connectionInfo.getDbType());
     assertEquals("orcl", connectionInfo.getDbInstance());
     assertEquals("localhost:1522", connectionInfo.getDbPeer());
+    assertEquals("orcl[oracle(localhost:1522)]", connectionInfo.getPeerService());
   }
 
   @Test
@@ -91,6 +100,7 @@ public class URLParserTest {
     assertEquals(ORACLE, connectionInfo.getDbType());
     assertEquals("orcl", connectionInfo.getDbInstance());
     assertEquals("localhost:1521", connectionInfo.getDbPeer());
+    assertEquals("orcl[oracle(localhost:1521)]", connectionInfo.getPeerService());
   }
 
   @Test
@@ -100,6 +110,7 @@ public class URLParserTest {
     assertEquals(ORACLE, connectionInfo.getDbType());
     assertEquals("orcl", connectionInfo.getDbInstance());
     assertEquals("localhost:1521", connectionInfo.getDbPeer());
+    assertEquals("orcl[oracle(localhost:1521)]", connectionInfo.getPeerService());
   }
 
   @Test
@@ -109,6 +120,7 @@ public class URLParserTest {
     assertEquals(ORACLE, connectionInfo.getDbType());
     assertEquals("orcl", connectionInfo.getDbInstance());
     assertEquals("hostA:1523,hostB:1521", connectionInfo.getDbPeer());
+    assertEquals("orcl[oracle(hostA:1523,hostB:1521)]", connectionInfo.getPeerService());
   }
 
   @Test
@@ -118,6 +130,7 @@ public class URLParserTest {
     assertEquals(ORACLE, connectionInfo.getDbType());
     assertEquals("orcl", connectionInfo.getDbInstance());
     assertEquals("myhost:1521", connectionInfo.getDbPeer());
+    assertEquals("orcl[oracle(myhost:1521)]", connectionInfo.getPeerService());
   }
 
   @Test
@@ -126,6 +139,7 @@ public class URLParserTest {
     assertEquals(H2, connectionInfo.getDbType());
     assertEquals("/data/sample", connectionInfo.getDbInstance());
     assertEquals("localhost:-1", connectionInfo.getDbPeer());
+    assertEquals("/data/sample[h2(localhost:-1)]", connectionInfo.getPeerService());
   }
 
   @Test
@@ -134,6 +148,7 @@ public class URLParserTest {
     assertEquals(H2, connectionInfo.getDbType());
     assertEquals("c:/data/sample", connectionInfo.getDbInstance());
     assertEquals("localhost:-1", connectionInfo.getDbPeer());
+    assertEquals("c:/data/sample[h2(localhost:-1)]", connectionInfo.getPeerService());
   }
 
   @Test
@@ -142,6 +157,7 @@ public class URLParserTest {
     assertEquals(H2, connectionInfo.getDbType());
     assertEquals("c:/data/sample", connectionInfo.getDbInstance());
     assertEquals("localhost:-1", connectionInfo.getDbPeer());
+    assertEquals("c:/data/sample[h2(localhost:-1)]", connectionInfo.getPeerService());
   }
 
   @Test
@@ -151,6 +167,7 @@ public class URLParserTest {
     assertEquals(H2, connectionInfo.getDbType());
     assertEquals("test_mem", connectionInfo.getDbInstance());
     assertEquals("localhost:-1", connectionInfo.getDbPeer());
+    assertEquals("test_mem[h2(localhost:-1)]", connectionInfo.getPeerService());
   }
 
   @Test
@@ -159,6 +176,7 @@ public class URLParserTest {
     assertEquals(H2, connectionInfo.getDbType());
     assertEquals("sample", connectionInfo.getDbInstance());
     assertEquals("localhost:8084", connectionInfo.getDbPeer());
+    assertEquals("sample[h2(localhost:8084)]", connectionInfo.getPeerService());
   }
 
   @Test
@@ -167,6 +185,7 @@ public class URLParserTest {
     assertEquals(POSTGRESQL, connectionInfo.getDbType());
     assertEquals("test", connectionInfo.getDbInstance());
     assertEquals("primaryhost:5432", connectionInfo.getDbPeer());
+    assertEquals("test[postgresql(primaryhost:5432)]", connectionInfo.getPeerService());
   }
 
   @Test
@@ -176,6 +195,7 @@ public class URLParserTest {
     assertEquals(POSTGRESQL, connectionInfo.getDbType());
     assertEquals("test", connectionInfo.getDbInstance());
     assertEquals("primaryhost:3307", connectionInfo.getDbPeer());
+    assertEquals("test[postgresql(primaryhost:3307)]", connectionInfo.getPeerService());
   }
 
   @Test
@@ -186,6 +206,8 @@ public class URLParserTest {
     assertEquals("test", connectionInfo.getDbInstance());
     assertEquals("primaryhost:3307,secondaryhost1:5432,secondaryhost2:5432,",
         connectionInfo.getDbPeer());
+    assertEquals("test[postgresql(primaryhost:3307,secondaryhost1:5432,secondaryhost2:5432,)]",
+        connectionInfo.getPeerService());
   }
 
   @Test
@@ -195,6 +217,8 @@ public class URLParserTest {
     assertEquals(POSTGRESQL, connectionInfo.getDbType());
     assertEquals("test", connectionInfo.getDbInstance());
     assertEquals("master:5432,slave1:5432,slave2:5432,slave3:5432,", connectionInfo.getDbPeer());
+    assertEquals("test[postgresql(master:5432,slave1:5432,slave2:5432,slave3:5432,)]",
+        connectionInfo.getPeerService());
   }
 
   @Test
