@@ -59,9 +59,9 @@ public class URLParserTest {
         .parser("jdbc:mysql//primaryhost:3307,secondaryhost1,secondaryhost2/test?profileSQL=true");
     assertEquals(MYSQL, connectionInfo.getDbType());
     assertEquals("test", connectionInfo.getDbInstance());
-    assertEquals("primaryhost:3307,secondaryhost1:3306,secondaryhost2:3306,",
+    assertEquals("primaryhost:3307,secondaryhost1:3306,secondaryhost2:3306",
         connectionInfo.getDbPeer());
-    assertEquals("test[mysql(primaryhost:3307,secondaryhost1:3306,secondaryhost2:3306,)]",
+    assertEquals("test[mysql(primaryhost:3307,secondaryhost1:3306,secondaryhost2:3306)]",
         connectionInfo.getPeerService());
   }
 
@@ -71,8 +71,8 @@ public class URLParserTest {
         .parser("jdbc:mysql:replication://master,slave1,slave2,slave3/test");
     assertEquals(MYSQL, connectionInfo.getDbType());
     assertEquals("test", connectionInfo.getDbInstance());
-    assertEquals("master:3306,slave1:3306,slave2:3306,slave3:3306,", connectionInfo.getDbPeer());
-    assertEquals("test[mysql(master:3306,slave1:3306,slave2:3306,slave3:3306,)]",
+    assertEquals("master:3306,slave1:3306,slave2:3306,slave3:3306", connectionInfo.getDbPeer());
+    assertEquals("test[mysql(master:3306,slave1:3306,slave2:3306,slave3:3306)]",
         connectionInfo.getPeerService());
   }
 
@@ -204,9 +204,9 @@ public class URLParserTest {
         "jdbc:postgresql//primaryhost:3307,secondaryhost1,secondaryhost2/test?profileSQL=true");
     assertEquals(POSTGRESQL, connectionInfo.getDbType());
     assertEquals("test", connectionInfo.getDbInstance());
-    assertEquals("primaryhost:3307,secondaryhost1:5432,secondaryhost2:5432,",
+    assertEquals("primaryhost:3307,secondaryhost1:5432,secondaryhost2:5432",
         connectionInfo.getDbPeer());
-    assertEquals("test[postgresql(primaryhost:3307,secondaryhost1:5432,secondaryhost2:5432,)]",
+    assertEquals("test[postgresql(primaryhost:3307,secondaryhost1:5432,secondaryhost2:5432)]",
         connectionInfo.getPeerService());
   }
 
@@ -216,8 +216,8 @@ public class URLParserTest {
         .parser("jdbc:postgresql:replication://master,slave1,slave2,slave3/test");
     assertEquals(POSTGRESQL, connectionInfo.getDbType());
     assertEquals("test", connectionInfo.getDbInstance());
-    assertEquals("master:5432,slave1:5432,slave2:5432,slave3:5432,", connectionInfo.getDbPeer());
-    assertEquals("test[postgresql(master:5432,slave1:5432,slave2:5432,slave3:5432,)]",
+    assertEquals("master:5432,slave1:5432,slave2:5432,slave3:5432", connectionInfo.getDbPeer());
+    assertEquals("test[postgresql(master:5432,slave1:5432,slave2:5432,slave3:5432)]",
         connectionInfo.getPeerService());
   }
 

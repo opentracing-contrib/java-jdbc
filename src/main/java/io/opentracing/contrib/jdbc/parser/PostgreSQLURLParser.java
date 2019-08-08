@@ -51,6 +51,9 @@ public class PostgreSQLURLParser extends AbstractURLParser {
           sb.append(host + ",");
         }
       }
+      if (',' == sb.charAt(sb.length() - 1)) {
+        sb.deleteCharAt(sb.length() - 1);
+      }
       return new ConnectionInfo.Builder(sb.toString()).dbType(DB_TYPE)
           .dbInstance(fetchDatabaseNameFromURL(url)).build();
     } else {
