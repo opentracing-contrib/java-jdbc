@@ -49,13 +49,12 @@ public class ConnectionInfo {
 
   /**
    * Make a unique serviceName that could be used in dependency diagram.
-   * @return
    */
   private String makePeerService() {
     if (null != dbInstance && !dbInstance.isEmpty()) {
       return dbInstance + "[" + dbType + "(" + dbPeer + ")]";
     } else {
-      return  dbType + "(" + dbPeer + ")";
+      return dbType + "(" + dbPeer + ")";
     }
   }
 
