@@ -13,8 +13,7 @@
  */
 package io.opentracing.contrib.jdbc;
 
-
-import static io.opentracing.contrib.jdbc.JdbcTracingUtils.buildSpan;
+import static io.opentracing.contrib.jdbc.JdbcTracingUtils.*;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -27,8 +26,11 @@ import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Logger;
@@ -48,11 +50,86 @@ public class TracingDriver implements Driver {
   protected static final Pattern PATTERN_FOR_IGNORING = Pattern.compile(IGNORE_FOR_TRACING_REGEX);
 
   static {
+    load();
+  }
+
+  /**
+   * Load the {@code TracingDriver} into the {@link DriverManager}.<br>
+   * This method has the following behavior:
+   * <ol>
+   * <li>Deregister all previously registered drivers.</li>
+   * <li>Load {@code TracingDriver} as the first driver.</li>
+   * <li>Reregister all drivers that were just deregistered.</li>
+   * </ol>
+   *
+   * @return The singleton instance of the {@code TracingDriver}.
+   */
+  public synchronized static Driver load() {
     try {
+      final Enumeration<Driver> enumeration = DriverManager.getDrivers();
+      List<Driver> drivers = null;
+      for (int i = 0; enumeration.hasMoreElements(); ++i) {
+        final Driver driver = enumeration.nextElement();
+        if (i == 0) {
+          if (driver == INSTANCE)
+            return driver;
+
+          drivers = new ArrayList<>();
+        }
+
+        drivers.add(driver);
+      }
+
+      // Deregister all drivers
+      if (drivers != null)
+        for (final Driver driver : drivers)
+          DriverManager.deregisterDriver(driver);
+
+      // Register TracingDriver as the first driver
       DriverManager.registerDriver(INSTANCE);
+
+      // Reregister all drivers
+      if (drivers != null)
+        for (final Driver driver : drivers)
+          DriverManager.registerDriver(driver);
+
+      return INSTANCE;
     } catch (SQLException e) {
       throw new IllegalStateException("Could not register TracingDriver with DriverManager", e);
     }
+  }
+
+  private static boolean interceptorMode = false;
+
+  /**
+   * Turns "interceptor mode" on or off.
+   *
+   * @param interceptorMode The {@code interceptorMode} value.
+   */
+  public static void setInterceptorMode(final boolean interceptorMode) {
+    TracingDriver.interceptorMode = interceptorMode;
+  }
+
+  private static boolean withActiveSpanOnly;
+
+  /**
+   * Sets the {@code withActiveSpanOnly} property for "interceptor mode".
+   *
+   * @param withActiveSpanOnly The {@code withActiveSpanOnly} value.
+   */
+  public static void setInterceptorProperty(final boolean withActiveSpanOnly) {
+    TracingDriver.withActiveSpanOnly = withActiveSpanOnly;
+  }
+
+  private static Set<String> ignoreStatements;
+
+  /**
+   * Sets the {@code ignoreStatements} property for "interceptor mode".
+   *
+   * @param ignoreStatements The {@code ignoreStatements} value.
+   */
+  public static void setInterceptorProperty(final Set<String> ignoreStatements) {
+    TracingDriver.ignoreStatements = ignoreStatements;
   }
 
   protected Tracer tracer;
@@ -64,30 +141,37 @@ public class TracingDriver implements Driver {
       throw new SQLException("url is required");
     }
 
-    if (!acceptsURL(url)) {
+    final Set<String> ignoreStatements;
+    final boolean withActiveSpanOnly;
+    if (acceptsURL(url)) {
+      withActiveSpanOnly = url.contains(WITH_ACTIVE_SPAN_ONLY);
+      ignoreStatements = extractIgnoredStatements(url);
+      url = extractRealUrl(url);
+    }
+    else if (!interceptorMode) {
       return null;
     }
-
-    String realUrl = extractRealUrl(url);
+    else {
+      withActiveSpanOnly = TracingDriver.withActiveSpanOnly;
+      ignoreStatements = TracingDriver.ignoreStatements;
+    }
 
     // find the real driver for the URL
-    Driver wrappedDriver = findDriver(realUrl);
+    final Driver wrappedDriver = findDriver(url);
 
-    boolean withActiveSpanOnly = url.contains(WITH_ACTIVE_SPAN_ONLY);
-
-    Tracer currentTracer = getTracer();
-    ConnectionInfo connectionInfo = URLParser.parser(realUrl);
-    Span span = buildSpan("AcquireConnection", "", connectionInfo, withActiveSpanOnly,
+    final Tracer currentTracer = getTracer();
+    final ConnectionInfo connectionInfo = URLParser.parser(url);
+    final Span span = buildSpan("AcquireConnection", "", connectionInfo, withActiveSpanOnly,
         Collections.<String>emptySet(), currentTracer);
-    Connection connection;
+    final Connection connection;
     try (Scope ignored = currentTracer.activateSpan(span)) {
-      connection = wrappedDriver.connect(realUrl, info);
+      connection = wrappedDriver.connect(url, info);
     } finally {
       span.finish();
     }
 
     return new TracingConnection(connection, connectionInfo, withActiveSpanOnly,
-        extractIgnoredStatements(url), currentTracer);
+        ignoreStatements, currentTracer);
   }
 
   @Override
@@ -138,7 +222,7 @@ public class TracingDriver implements Driver {
 
     for (Driver candidate : Collections.list(DriverManager.getDrivers())) {
       try {
-        if (candidate.acceptsURL(realUrl)) {
+        if (!(candidate instanceof TracingDriver) && candidate.acceptsURL(realUrl)) {
           return candidate;
         }
       } catch (SQLException ignored) {

@@ -195,11 +195,11 @@ public class SpringTest {
     checkNoEmptyTags(finishedSpans);
   }
 
-  private BasicDataSource getDataSource(boolean traceWithActiveSpanOnly) {
+  private static BasicDataSource getDataSource(boolean traceWithActiveSpanOnly) {
     return getDataSource(traceWithActiveSpanOnly, new ArrayList<String>());
   }
 
-  private BasicDataSource getDataSource(boolean traceWithActiveSpanOnly, List<String> ignored) {
+  private static BasicDataSource getDataSource(boolean traceWithActiveSpanOnly, List<String> ignored) {
 
     String ignoreForTracing = TestUtil.buildIgnoredString(ignored);
 
