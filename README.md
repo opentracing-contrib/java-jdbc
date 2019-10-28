@@ -16,23 +16,67 @@ pom.xml
 
 ## Usage
 
-1. Add _tracing_ to jdbc url. E.g. _jdbc:tracing:h2:mem:test_  
-To trace calls only if there is an active Span use property `traceWithActiveSpanOnly=true`.  
-E.g. _jdbc:tracing:h2:mem:test?traceWithActiveSpanOnly=true_
-To ignore specific queries (such as health checks) use the property `ignoreForTracing="SELECT 1"`. 
-Double quotes can be escaped with `\ ` (i.e.) `SELECT * FROM \"TEST\"` and the property
-can be repeated for multiple statements.
+### Non-interceptor
 
-2. Set driver class to `io.opentracing.contrib.jdbc.TracingDriver`
+> Tracing for JDBC connections of URLs starting with `"jdbc:tracing:"`.
 
-3. Instantiate tracer and register it with GlobalTracer
+1. Activate tracing for JDBC connections by adding `tracing` to the JDBC url:
+
+   _jdbc:**tracing**:h2:mem:test_
+
+   To trace calls with active `Span`s only, set property `traceWithActiveSpanOnly=true`.
+
+   _jdbc:**tracing**:h2:mem:test?**traceWithActiveSpanOnly=true**_
+
+   To ignore specific queries (such as health checks), use the property `ignoreForTracing="SELECT 1"`. Double quotes can be escaped with `\`.
+
+   `SELECT * FROM \"TEST\"`<br><sup>The property can be repeated for multiple statements.</sup>
+
+2. Set driver class to `io.opentracing.contrib.jdbc.TracingDriver`.
+
+   ```java
+   Class.forName("io.opentracing.contrib.jdbc.TracingDriver");
+   ```
+
+   or
+
+   ```java
+   io.opentracing.contrib.jdbc.TracingDriver.load();
+   ```
+
+3. Instantiate tracer and register it with GlobalTracer.
+
+   ```java
+   // Instantiate tracer
+   Tracer tracer = ...
+
+   // Register tracer with GlobalTracer
+   GlobalTracer.register(tracer);
+
+   ```
+
+### Interceptor
+
+> Tracing for all JDBC connections without modifying the URL.
+
+In "interceptor mode", the `TracingDriver` will intercept calls to `DriverManager.getConnection(url,...)` for all URLs. The `TracingDriver` provides connections to the `DriverManager` that are instrumented. Turn on "interceptor mode" via:
+
 ```java
-// Instantiate tracer
-Tracer tracer = ...
+io.opentracing.contrib.jdbc.TracingDriver.setInterceptorMode(true);
+```
 
-// Register tracer with GlobalTracer
-GlobalTracer.register(tracer);
+The `withActiveSpanOnly` and `ignoreStatements` properties for "interceptor mode" can be configured with the `TracingDriver` via:
 
+```java
+// Set withActiveSpanOnly=true
+TracingDriver.setInterceptorProperty(true);
+```
+
+and
+
+```java
+// Set ignoreStatements={"CREATE TABLE ignored (id INTEGER, TEST VARCHAR)"}
+TracingDriver.setInterceptorProperty(Collections.singleton("CREATE TABLE ignored (id INTEGER, TEST VARCHAR)"));
 ```
 
 ### Hibernate
@@ -63,19 +107,19 @@ GlobalTracer.register(tracer);
 ### Spring
 
 For dbcp2:
- 
+
 ```xml
 <bean id="dataSource" destroy-method="close" class="org.apache.commons.dbcp2.BasicDataSource">
     <property name="driverClassName" value="io.opentracing.contrib.jdbc.TracingDriver"/>
     <property name="url" value="jdbc:tracing:mysql://localhost:3306/test"/>
     ...
-</bean> 
+</bean>
 
 ```
 
 ## Troubleshooting
-In case of _Unable to find a driver_ error the database driver should be registered before configuring 
-the datasource.     
+In case of _Unable to find a driver_ error the database driver should be registered before configuring
+the datasource.
 E.g. `Class.forName("com.mysql.jdbc.Driver");`
 
 ## License

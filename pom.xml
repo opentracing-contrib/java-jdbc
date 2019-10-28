@@ -18,7 +18,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>io.opentracing.contrib</groupId>
   <artifactId>opentracing-jdbc</artifactId>
-  <version>0.1.9-SNAPSHOT</version>
+  <version>0.2.0-SNAPSHOT</version>
 
   <name>${project.groupId}:${project.artifactId}</name>
   <description>OpenTracing Instrumentation for JDBC API</description>
@@ -55,7 +55,8 @@
   </issueManagement>
 
   <properties>
-    <java.version>1.7</java.version>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.build.resourceEncoding>UTF-8</project.build.resourceEncoding>
 
@@ -132,15 +133,6 @@
 
   <build>
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.8.1</version>
-        <configuration>
-          <source>${java.version}</source>
-          <target>${java.version}</target>
-        </configuration>
-      </plugin>
       <plugin>
         <artifactId>maven-release-plugin</artifactId>
         <version>2.5.3</version>

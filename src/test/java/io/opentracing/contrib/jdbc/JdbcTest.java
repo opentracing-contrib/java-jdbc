@@ -22,7 +22,9 @@ import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
 import io.opentracing.util.GlobalTracerTestUtil;
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import org.junit.Before;
@@ -30,6 +32,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class JdbcTest {
+  public static void assertGetDriver(final Connection connection) throws SQLException {
+    final String originalURL = connection.getMetaData().getURL();
+    final Driver driver = DriverManager.getDriver(originalURL);
+    assertEquals("org.h2.Driver", driver.getClass().getName());
+  }
 
   private static final MockTracer mockTracer = new MockTracer();
 
@@ -44,11 +51,13 @@ public class JdbcTest {
   }
 
   @Test
-  public void test() throws Exception {
-    Connection connection = DriverManager.getConnection("jdbc:tracing:h2:mem:jdbc");
-    Statement statement = connection.createStatement();
-    statement.executeUpdate("CREATE TABLE employer (id INTEGER)");
-    connection.close();
+  public void testPassTracingUrl() throws Exception {
+    TracingDriver.setInterceptorMode(false);
+    try (Connection connection = DriverManager.getConnection("jdbc:tracing:h2:mem:jdbc")) {
+      Statement statement = connection.createStatement();
+      statement.executeUpdate("CREATE TABLE employer (id INTEGER)");
+      assertGetDriver(connection);
+    }
 
     List<MockSpan> spans = mockTracer.finishedSpans();
     assertEquals(2, spans.size());
@@ -56,19 +65,69 @@ public class JdbcTest {
   }
 
   @Test
-  public void with_error() throws Exception {
-    Connection connection = DriverManager.getConnection("jdbc:tracing:h2:mem:jdbc");
-    Statement statement = connection.createStatement();
-    try {
-      statement.executeUpdate("CREATE TABLE employer (id INTEGER2)");
-    } catch (Exception ignore) {
+  public void testFailTracingUrl() throws Exception {
+    try (Connection connection = DriverManager.getConnection("jdbc:tracing:h2:mem:jdbc")) {
+      Statement statement = connection.createStatement();
+      try {
+        statement.executeUpdate("CREATE TABLE employer (id INTEGER2)");
+      } catch (Exception ignore) {
+      }
+      assertGetDriver(connection);
     }
-    connection.close();
 
     List<MockSpan> spans = mockTracer.finishedSpans();
     assertEquals(2, spans.size());
     MockSpan span = spans.get(1);
     assertTrue(span.tags().containsKey(Tags.ERROR.getKey()));
     checkNoEmptyTags(spans);
+  }
+
+  @Test
+  public void testPassOriginalUrl() throws Exception {
+    TracingDriver.setInterceptorMode(true);
+    try (Connection connection = DriverManager.getConnection("jdbc:h2:mem:jdbc")) {
+      Statement statement = connection.createStatement();
+      statement.executeUpdate("CREATE TABLE employer (id INTEGER)");
+      assertGetDriver(connection);
+    }
+
+    List<MockSpan> spans = mockTracer.finishedSpans();
+    assertEquals(2, spans.size());
+    checkNoEmptyTags(spans);
+  }
+
+  @Test
+  public void testFailOriginalUrl() throws Exception {
+    TracingDriver.setInterceptorMode(true);
+    try (Connection connection = DriverManager.getConnection("jdbc:h2:mem:jdbc")) {
+      Statement statement = connection.createStatement();
+      try {
+        statement.executeUpdate("CREATE TABLE employer (id INTEGER2)");
+      } catch (Exception ignore) {
+      }
+      assertGetDriver(connection);
+    }
+
+    List<MockSpan> spans = mockTracer.finishedSpans();
+    assertEquals(2, spans.size());
+    MockSpan span = spans.get(1);
+    assertTrue(span.tags().containsKey(Tags.ERROR.getKey()));
+    checkNoEmptyTags(spans);
+  }
+
+  @Test
+  public void testFailInterceptor() throws Exception {
+    TracingDriver.setInterceptorMode(false);
+    try (Connection connection = DriverManager.getConnection("jdbc:h2:mem:jdbc")) {
+      Statement statement = connection.createStatement();
+      try {
+        statement.executeUpdate("CREATE TABLE employer (id INTEGER2)");
+      } catch (Exception ignore) {
+      }
+      assertGetDriver(connection);
+    }
+
+    List<MockSpan> spans = mockTracer.finishedSpans();
+    assertEquals(0, spans.size());
   }
 }
