@@ -199,7 +199,8 @@ public class SpringTest {
     return getDataSource(traceWithActiveSpanOnly, new ArrayList<String>());
   }
 
-  private static BasicDataSource getDataSource(boolean traceWithActiveSpanOnly, List<String> ignored) {
+  private static BasicDataSource getDataSource(boolean traceWithActiveSpanOnly,
+      List<String> ignored) {
 
     String ignoreForTracing = TestUtil.buildIgnoredString(ignored);
 

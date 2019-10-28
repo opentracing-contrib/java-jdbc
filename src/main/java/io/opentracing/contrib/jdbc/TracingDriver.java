@@ -13,7 +13,7 @@
  */
 package io.opentracing.contrib.jdbc;
 
-import static io.opentracing.contrib.jdbc.JdbcTracingUtils.*;
+import static io.opentracing.contrib.jdbc.JdbcTracingUtils.buildSpan;
 
 import io.opentracing.Scope;
 import io.opentracing.Span;
@@ -54,8 +54,8 @@ public class TracingDriver implements Driver {
   }
 
   /**
-   * Load the {@code TracingDriver} into the {@link DriverManager}.<br>
-   * This method has the following behavior:
+   * Load the {@code TracingDriver} into the {@link DriverManager}.<br> This method has the
+   * following behavior:
    * <ol>
    * <li>Deregister all previously registered drivers.</li>
    * <li>Load {@code TracingDriver} as the first driver.</li>
@@ -71,8 +71,9 @@ public class TracingDriver implements Driver {
       for (int i = 0; enumeration.hasMoreElements(); ++i) {
         final Driver driver = enumeration.nextElement();
         if (i == 0) {
-          if (driver == INSTANCE)
+          if (driver == INSTANCE) {
             return driver;
+          }
 
           drivers = new ArrayList<>();
         }
@@ -81,17 +82,21 @@ public class TracingDriver implements Driver {
       }
 
       // Deregister all drivers
-      if (drivers != null)
-        for (final Driver driver : drivers)
+      if (drivers != null) {
+        for (final Driver driver : drivers) {
           DriverManager.deregisterDriver(driver);
+        }
+      }
 
       // Register TracingDriver as the first driver
       DriverManager.registerDriver(INSTANCE);
 
       // Reregister all drivers
-      if (drivers != null)
-        for (final Driver driver : drivers)
+      if (drivers != null) {
+        for (final Driver driver : drivers) {
           DriverManager.registerDriver(driver);
+        }
+      }
 
       return INSTANCE;
     } catch (SQLException e) {
@@ -147,11 +152,9 @@ public class TracingDriver implements Driver {
       withActiveSpanOnly = url.contains(WITH_ACTIVE_SPAN_ONLY);
       ignoreStatements = extractIgnoredStatements(url);
       url = extractRealUrl(url);
-    }
-    else if (!interceptorMode) {
+    } else if (!interceptorMode) {
       return null;
-    }
-    else {
+    } else {
       withActiveSpanOnly = TracingDriver.withActiveSpanOnly;
       ignoreStatements = TracingDriver.ignoreStatements;
     }
