@@ -1,3 +1,8 @@
 .idea/
-*.iml
+.metadata/
+.recommenders/
+.settings/
 target/
+*.iml
+.classpath
+.project
