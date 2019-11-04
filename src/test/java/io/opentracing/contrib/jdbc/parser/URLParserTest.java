@@ -132,6 +132,16 @@ public class URLParserTest {
     assertEquals("myhost:1521", connectionInfo.getDbPeer());
     assertEquals("orcl[oracle(myhost:1521)]", connectionInfo.getPeerService());
   }
+  
+  @Test
+  public void testParseOracleJDBCURLWithSID() {
+    ConnectionInfo connectionInfo = URLParser
+        .parser("jdbc:oracle:thin:@orcl");
+    assertEquals(ORACLE, connectionInfo.getDbType());
+    assertEquals("orcl", connectionInfo.getDbInstance());
+    assertEquals("orcl:1521", connectionInfo.getDbPeer());
+    assertEquals("orcl[oracle(orcl:1521)]", connectionInfo.getPeerService());
+  }
 
   @Test
   public void testParseH2JDBCURLWithEmbedded() {

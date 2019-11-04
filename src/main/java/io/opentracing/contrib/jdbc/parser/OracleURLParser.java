@@ -21,6 +21,7 @@ public class OracleURLParser extends AbstractURLParser {
 
   public static final String SERVICE_NAME_FLAG = "@//";
   public static final String TNSNAME_URL_FLAG = "DESCRIPTION";
+  public static final String SID_NAME_FLAG = "@";
   private static final String DB_TYPE = "oracle";
   private static final int DEFAULT_PORT = 1521;
 
@@ -33,6 +34,9 @@ public class OracleURLParser extends AbstractURLParser {
       hostLabelStartIndex = url.indexOf("@") + 1;
     }
     int hostLabelEndIndex = url.lastIndexOf(":");
+	if (isSIDNameURL(url)) {
+		hostLabelEndIndex = url.length();
+	}
     return new URLLocation(hostLabelStartIndex, hostLabelEndIndex);
   }
 
@@ -45,6 +49,8 @@ public class OracleURLParser extends AbstractURLParser {
     } else if (isTNSNameURL(url)) {
       hostLabelStartIndex = url.indexOf("=", url.indexOf("SERVICE_NAME")) + 1;
       hostLabelEndIndex = url.indexOf(")", hostLabelStartIndex);
+    } else if (isSIDNameURL(url)) {
+      hostLabelStartIndex = url.indexOf("@") + 1;
     } else {
       hostLabelStartIndex = url.lastIndexOf(":") + 1;
     }
@@ -53,6 +59,10 @@ public class OracleURLParser extends AbstractURLParser {
 
   private boolean isServiceNameURL(String url) {
     return url.contains(SERVICE_NAME_FLAG);
+  }
+  
+  private boolean isSIDNameURL(String url) {
+	return url.contains(SID_NAME_FLAG) && !url.contains(SERVICE_NAME_FLAG) && !url.substring(url.indexOf(SID_NAME_FLAG)+1).contains(":");
   }
 
   private boolean isTNSNameURL(String url) {
