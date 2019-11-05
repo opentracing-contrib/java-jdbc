@@ -132,7 +132,7 @@ public class URLParserTest {
     assertEquals("myhost:1521", connectionInfo.getDbPeer());
     assertEquals("orcl[oracle(myhost:1521)]", connectionInfo.getPeerService());
   }
-  
+
   @Test
   public void testParseOracleJDBCURLWithSID() {
     ConnectionInfo connectionInfo = URLParser

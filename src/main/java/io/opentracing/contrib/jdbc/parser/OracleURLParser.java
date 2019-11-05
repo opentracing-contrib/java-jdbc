@@ -34,9 +34,9 @@ public class OracleURLParser extends AbstractURLParser {
       hostLabelStartIndex = url.indexOf("@") + 1;
     }
     int hostLabelEndIndex = url.lastIndexOf(":");
-	if (isSIDNameURL(url)) {
-		hostLabelEndIndex = url.length();
-	}
+    if (isSIDNameURL(url)) {
+      hostLabelEndIndex = url.length();
+    }
     return new URLLocation(hostLabelStartIndex, hostLabelEndIndex);
   }
 
@@ -60,9 +60,10 @@ public class OracleURLParser extends AbstractURLParser {
   private boolean isServiceNameURL(String url) {
     return url.contains(SERVICE_NAME_FLAG);
   }
-  
+
   private boolean isSIDNameURL(String url) {
-	return url.contains(SID_NAME_FLAG) && !url.contains(SERVICE_NAME_FLAG) && !url.substring(url.indexOf(SID_NAME_FLAG)+1).contains(":");
+    return url.contains(SID_NAME_FLAG) && !url.contains(SERVICE_NAME_FLAG) && !url
+        .substring(url.indexOf(SID_NAME_FLAG) + 1).contains(":");
   }
 
   private boolean isTNSNameURL(String url) {
