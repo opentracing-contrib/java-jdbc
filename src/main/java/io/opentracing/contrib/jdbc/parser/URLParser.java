@@ -53,7 +53,7 @@ public class URLParser {
     try {
       return parser.parse(url);
     } catch (Exception e) {
-      log.log(Level.WARNING, "error occurs when paring jdbc url");
+      log.log(Level.WARNING, "error occurs when parsing jdbc url");
     }
     return ConnectionInfo.UNKNOWN_CONNECTION_INFO;
   }
