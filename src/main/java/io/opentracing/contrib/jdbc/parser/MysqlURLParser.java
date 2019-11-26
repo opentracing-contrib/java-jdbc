@@ -25,12 +25,17 @@ public class MysqlURLParser extends AbstractURLParser {
 
   @Override
   protected URLLocation fetchDatabaseHostsIndexRange(String url) {
-    int hostLabelStartIndex = url.indexOf("//");
-    int hostLabelEndIndex = url.indexOf("/", hostLabelStartIndex + 2);
+    int hostLabelStartIndex = url.indexOf("//") + 2;
+    int hostLabelEndIndex = url.indexOf("/", hostLabelStartIndex);
     if (hostLabelEndIndex == -1) {
-      hostLabelEndIndex = url.indexOf("?", hostLabelStartIndex + 2);
+      int queryStringStartIndex = url.indexOf("?", hostLabelStartIndex);
+      if( queryStringStartIndex == -1 ){
+        hostLabelEndIndex = url.length();
+      } else {
+        hostLabelEndIndex = queryStringStartIndex;
+      }
     }
-    return new URLLocation(hostLabelStartIndex + 2, hostLabelEndIndex);
+    return new URLLocation(hostLabelStartIndex, hostLabelEndIndex);
   }
 
   protected String fetchDatabaseNameFromURL(String url, int startSize) {
