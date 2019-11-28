@@ -29,7 +29,7 @@ public class MysqlURLParser extends AbstractURLParser {
     int hostLabelEndIndex = url.indexOf("/", hostLabelStartIndex);
     if (hostLabelEndIndex == -1) {
       int queryStringStartIndex = url.indexOf("?", hostLabelStartIndex);
-      if( queryStringStartIndex == -1 ){
+      if (queryStringStartIndex == -1) {
         hostLabelEndIndex = url.length();
       } else {
         hostLabelEndIndex = queryStringStartIndex;

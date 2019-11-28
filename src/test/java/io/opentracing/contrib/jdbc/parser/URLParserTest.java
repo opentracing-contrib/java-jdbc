@@ -44,7 +44,7 @@ public class URLParserTest {
   }
 
   @Test
-  public void testParseMysqlURLWithoutExplicitDBOrQueryString(){
+  public void testParseMysqlURLWithoutExplicitDBOrQueryString() {
     ConnectionInfo connectionInfo = URLParser.parser("jdbc:mysql://primaryhost");
     assertEquals(MYSQL, connectionInfo.getDbType());
     assertEquals("", connectionInfo.getDbInstance());
