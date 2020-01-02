@@ -13,135 +13,140 @@
  */
 package io.opentracing.contrib.jdbc.parser;
 
-import io.opentracing.contrib.jdbc.ConnectionInfo;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class OracleURLParser extends AbstractURLParser {
+import io.opentracing.contrib.jdbc.ConnectionInfo;
 
-  public static final String SERVICE_NAME_FLAG = "@//";
-  public static final String TNSNAME_URL_FLAG = "DESCRIPTION";
-  public static final String SID_NAME_FLAG = "@";
-  private static final String DB_TYPE = "oracle";
-  private static final int DEFAULT_PORT = 1521;
+public class OracleURLParser implements ConnectionURLParser {
+    public static final String DB_TYPE = "oracle";
+    public static final String PREFIX = "jdbc:oracle:thin:";
+    public static final int DEFAULT_PORT = 1521;
+    private static Pattern EASY_CONNECT_PATTERN = Pattern.compile(
+        "(?<username>.*)@(//)?(?<host>[^:/]+)(?<port>:[0-9]+)?(?<service>[:/][^:/]+)?(?<server>:[^:/]+)?(?<instance>/[^:/]+)?");
 
-  @Override
-  protected URLLocation fetchDatabaseHostsIndexRange(String url) {
-    int hostLabelStartIndex;
-    if (isServiceNameURL(url)) {
-      hostLabelStartIndex = url.indexOf(SERVICE_NAME_FLAG) + 3;
-    } else {
-      hostLabelStartIndex = url.indexOf("@") + 1;
+    @Override
+    public ConnectionInfo parse(final String url) {
+        if (url != null && url.startsWith(PREFIX)) {
+            OracleConnectionInfo connectionInfo = parseTnsName(url.substring(PREFIX.length()));
+            if (connectionInfo == null) {
+                connectionInfo = parseEasyConnect(url.substring(PREFIX.length()));
+            }
+            if (connectionInfo != null) {
+                return new ConnectionInfo.Builder(connectionInfo.getDbPeer()) //
+                    .dbType(DB_TYPE) //
+                    .dbInstance(connectionInfo.getDbInstance()) //
+                    .build();
+            }
+        }
+        return null;
     }
-    int hostLabelEndIndex = url.lastIndexOf(":");
-    if (isSIDNameURL(url)) {
-      hostLabelEndIndex = url.length();
+
+    private OracleConnectionInfo parseTnsName(final String url) {
+        final String hosts = parseDatabaseHostsFromTnsUrl(url);
+        if (hosts != null) {
+            final int idxServiceName = url.indexOf("SERVICE_NAME");
+            final int start = url.indexOf('=', idxServiceName) + 1;
+            final int end = url.indexOf(")", start);
+            final String serviceName = url.substring(start, end);
+            return new OracleConnectionInfo() //
+                .setDbPeer(hosts) //
+                .setDbInstance(serviceName);
+        }
+        return null;
     }
-    return new URLLocation(hostLabelStartIndex, hostLabelEndIndex);
-  }
 
-  @Override
-  protected URLLocation fetchDatabaseNameIndexRange(String url) {
-    int hostLabelStartIndex;
-    int hostLabelEndIndex = url.length();
-    if (isServiceNameURL(url)) {
-      hostLabelStartIndex = url.lastIndexOf("/") + 1;
-    } else if (isTNSNameURL(url)) {
-      hostLabelStartIndex = url.indexOf("=", url.indexOf("SERVICE_NAME")) + 1;
-      hostLabelEndIndex = url.indexOf(")", hostLabelStartIndex);
-    } else if (isSIDNameURL(url)) {
-      hostLabelStartIndex = url.indexOf("@") + 1;
-    } else {
-      hostLabelStartIndex = url.lastIndexOf(":") + 1;
+    public static String parseDatabaseHostsFromTnsUrl(String url) {
+        int beginIndex = url.indexOf("DESCRIPTION");
+        if (beginIndex == -1) {
+            return null;
+        }
+        List<String> hosts = new ArrayList<String>();
+        do {
+            int hostStartIndex = url.indexOf("HOST", beginIndex);
+            if (hostStartIndex == -1) {
+                break;
+            }
+            int equalStartIndex = url.indexOf("=", hostStartIndex);
+            int hostEndIndex = url.indexOf(")", hostStartIndex);
+            String host = url.substring(equalStartIndex + 1, hostEndIndex);
+
+            int port = DEFAULT_PORT;
+            int portStartIndex = url.indexOf("PORT", hostEndIndex);
+            int portEndIndex = url.length();
+            if (portStartIndex != -1) {
+                int portEqualStartIndex = url.indexOf("=", portStartIndex);
+                portEndIndex = url.indexOf(")", portEqualStartIndex);
+                port = Integer.parseInt(url.substring(portEqualStartIndex + 1, portEndIndex).trim());
+            }
+            hosts.add(host.trim() + ":" + port);
+            beginIndex = portEndIndex;
+        } while (true);
+        return join(",", hosts);
     }
-    return new URLLocation(hostLabelStartIndex, hostLabelEndIndex);
-  }
 
-  private boolean isServiceNameURL(String url) {
-    return url.contains(SERVICE_NAME_FLAG);
-  }
-
-  private boolean isSIDNameURL(String url) {
-    return url.contains(SID_NAME_FLAG) && !url.contains(SERVICE_NAME_FLAG) && !url
-        .substring(url.indexOf(SID_NAME_FLAG) + 1).contains(":");
-  }
-
-  private boolean isTNSNameURL(String url) {
-    return url.contains(TNSNAME_URL_FLAG);
-  }
-
-  @Override
-  public ConnectionInfo parse(String url) {
-    if (isTNSNameURL(url)) {
-      return tnsNameURLParse(url);
-    } else {
-      return commonsURLParse(url);
+    private static String join(String delimiter, List<String> list) {
+        if (list == null || list.isEmpty()) {
+            return "";
+        }
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0, len = list.size(); i < len; i++) {
+            if (i == (len - 1)) {
+                builder.append(list.get(i));
+            } else {
+                builder.append(list.get(i)).append(delimiter);
+            }
+        }
+        return builder.toString();
     }
-  }
 
-  private ConnectionInfo commonsURLParse(final String url) {
-    String host = fetchDatabaseHostsFromURL(url);
-    String[] hostSegment = splitDatabaseAddress(host);
-    String databaseName = fetchDatabaseNameFromURL(url);
-    if (hostSegment.length == 1) {
-      return new ConnectionInfo.Builder(host, DEFAULT_PORT).dbType(DB_TYPE).dbInstance(databaseName)
-          .build();
-    } else {
-      return new ConnectionInfo.Builder(hostSegment[0], Integer.valueOf(hostSegment[1]))
-          .dbType(DB_TYPE).dbInstance(databaseName).build();
+    /**
+     * Implementation according to https://www.oracle.com/technetwork/database/enterprise-edition/oraclenetservices-neteasyconnect-133058.pdf
+     *
+     * @param url the url without the oracle jdbc prefix
+     * @return the oracle connection info if the url could be parsed, or null otherwise.
+     */
+    public static OracleConnectionInfo parseEasyConnect(final String url) {
+        final Matcher matcher = EASY_CONNECT_PATTERN.matcher(url);
+        if (matcher.matches()) {
+            final OracleConnectionInfo result = new OracleConnectionInfo();
+            final String host = matcher.group("host");
+            final String portGroup = matcher.group("port");
+            final int dbPort = portGroup != null ? Integer.parseInt(portGroup.substring(1)) : DEFAULT_PORT;
+            result.setDbPeer(host + ":" + dbPort);
+            final String service = matcher.group("service");
+            if (service != null) {
+                result.setDbInstance(service.substring(1));
+            } else {
+                result.setDbInstance(host);
+            }
+            return result;
+        }
+        return null;
     }
-  }
 
-  private ConnectionInfo tnsNameURLParse(final String url) {
-    String host = parseDatabaseHostsFromURL(url);
-    String databaseName = fetchDatabaseNameFromURL(url);
-    return new ConnectionInfo.Builder(host).dbType(DB_TYPE).dbInstance(databaseName).build();
-  }
+    public static class OracleConnectionInfo {
+        private String dbInstance;
+        private String dbPeer;
 
-  private String parseDatabaseHostsFromURL(String url) {
-    int beginIndex = url.indexOf("DESCRIPTION");
-    List<String> hosts = new ArrayList<String>();
-    do {
-      int hostStartIndex = url.indexOf("HOST", beginIndex);
-      if (hostStartIndex == -1) {
-        break;
-      }
-      int equalStartIndex = url.indexOf("=", hostStartIndex);
-      int hostEndIndex = url.indexOf(")", hostStartIndex);
-      String host = url.substring(equalStartIndex + 1, hostEndIndex);
+        public String getDbInstance() {
+            return dbInstance;
+        }
 
-      int port = DEFAULT_PORT;
-      int portStartIndex = url.indexOf("PORT", hostEndIndex);
-      int portEndIndex = url.length();
-      if (portStartIndex != -1) {
-        int portEqualStartIndex = url.indexOf("=", portStartIndex);
-        portEndIndex = url.indexOf(")", portEqualStartIndex);
-        port = Integer.parseInt(url.substring(portEqualStartIndex + 1, portEndIndex).trim());
-      }
-      hosts.add(host.trim() + ":" + port);
-      beginIndex = portEndIndex;
+        public OracleConnectionInfo setDbInstance(final String dbInstance) {
+            this.dbInstance = dbInstance;
+            return this;
+        }
+
+        public String getDbPeer() {
+            return dbPeer;
+        }
+
+        public OracleConnectionInfo setDbPeer(final String dbPeer) {
+            this.dbPeer = dbPeer;
+            return this;
+        }
     }
-    while (true);
-    return join(",", hosts);
-  }
-
-  private String join(String delimiter, List<String> list) {
-    if (list == null || list.isEmpty()) {
-      return "";
-    }
-    StringBuilder builder = new StringBuilder();
-    for (int i = 0, len = list.size(); i < len; i++) {
-      if (i == (len - 1)) {
-        builder.append(list.get(i));
-      } else {
-        builder.append(list.get(i)).append(delimiter);
-      }
-    }
-    return builder.toString();
-  }
-
-  private String[] splitDatabaseAddress(String address) {
-    String[] hostSegment = address.split(":");
-    return hostSegment;
-  }
 }
