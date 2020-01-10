@@ -36,7 +36,6 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 
 public class TracingConnection implements Connection {
-
   private final Connection connection;
   private final ConnectionInfo connectionInfo;
   private final boolean withActiveSpanOnly;
@@ -54,20 +53,23 @@ public class TracingConnection implements Connection {
 
   @Override
   public Statement createStatement() throws SQLException {
-    return new TracingStatement(connection.createStatement(), connectionInfo, withActiveSpanOnly,
-        ignoredStatements, tracer);
+    final Statement statement = connection.createStatement();
+    return DynamicProxy.wrap(statement, new TracingStatement(statement, connectionInfo, withActiveSpanOnly,
+        ignoredStatements, tracer));
   }
 
   @Override
   public PreparedStatement prepareStatement(String sql) throws SQLException {
-    return new TracingPreparedStatement(connection.prepareStatement(sql), sql, connectionInfo,
-        withActiveSpanOnly, ignoredStatements, tracer);
+    final PreparedStatement statement = connection.prepareStatement(sql);
+    return DynamicProxy.wrap(statement, new TracingPreparedStatement(statement, sql, connectionInfo,
+        withActiveSpanOnly, ignoredStatements, tracer));
   }
 
   @Override
   public CallableStatement prepareCall(String sql) throws SQLException {
-    return new TracingCallableStatement(connection.prepareCall(sql), sql, connectionInfo,
-        withActiveSpanOnly, ignoredStatements, tracer);
+    final CallableStatement statement = connection.prepareCall(sql);
+    return DynamicProxy.wrap(statement, new TracingCallableStatement(connection.prepareCall(sql), sql, connectionInfo,
+        withActiveSpanOnly, ignoredStatements, tracer));
   }
 
   @Override
@@ -153,24 +155,25 @@ public class TracingConnection implements Connection {
   @Override
   public Statement createStatement(int resultSetType, int resultSetConcurrency)
       throws SQLException {
-    return new TracingStatement(connection.createStatement(resultSetType, resultSetConcurrency),
-        connectionInfo, withActiveSpanOnly, ignoredStatements, tracer);
+    final Statement statement = connection.createStatement(resultSetType, resultSetConcurrency);
+    return DynamicProxy.wrap(statement, new TracingStatement(statement,
+        connectionInfo, withActiveSpanOnly, ignoredStatements, tracer));
   }
 
   @Override
   public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency)
       throws SQLException {
-    return new TracingPreparedStatement(
-        connection.prepareStatement(sql, resultSetType, resultSetConcurrency), sql, connectionInfo,
-        withActiveSpanOnly, ignoredStatements, tracer);
+    final PreparedStatement statement = connection.prepareStatement(sql, resultSetType, resultSetConcurrency);
+    return DynamicProxy.wrap(statement, new TracingPreparedStatement(statement, sql, connectionInfo,
+        withActiveSpanOnly, ignoredStatements, tracer));
   }
 
   @Override
   public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency)
       throws SQLException {
-    return new TracingCallableStatement(
-        connection.prepareCall(sql, resultSetType, resultSetConcurrency), sql, connectionInfo,
-        withActiveSpanOnly, ignoredStatements, tracer);
+    final CallableStatement statement = connection.prepareCall(sql, resultSetType, resultSetConcurrency);
+    return DynamicProxy.wrap(statement, new TracingCallableStatement(statement, sql, connectionInfo,
+        withActiveSpanOnly, ignoredStatements, tracer));
   }
 
   @Override
@@ -216,44 +219,46 @@ public class TracingConnection implements Connection {
   @Override
   public Statement createStatement(int resultSetType, int resultSetConcurrency,
       int resultSetHoldability) throws SQLException {
-    return new TracingStatement(
-        connection.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability),
-        connectionInfo, withActiveSpanOnly, ignoredStatements, tracer);
+    final Statement statement = connection.createStatement(resultSetType, resultSetConcurrency, resultSetHoldability);
+    return DynamicProxy.wrap(statement, new TracingStatement(statement,
+        connectionInfo, withActiveSpanOnly, ignoredStatements, tracer));
   }
 
   @Override
   public PreparedStatement prepareStatement(String sql, int resultSetType, int resultSetConcurrency,
       int resultSetHoldability) throws SQLException {
-    return new TracingPreparedStatement(
-        connection.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability),
-        sql, connectionInfo, withActiveSpanOnly, ignoredStatements, tracer);
+    final PreparedStatement statement = connection.prepareStatement(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
+    return DynamicProxy.wrap(statement, new TracingPreparedStatement(statement,
+        sql, connectionInfo, withActiveSpanOnly, ignoredStatements, tracer));
   }
 
   @Override
   public CallableStatement prepareCall(String sql, int resultSetType, int resultSetConcurrency,
       int resultSetHoldability) throws SQLException {
-    return new TracingCallableStatement(
-        connection.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability), sql,
-        connectionInfo, withActiveSpanOnly, ignoredStatements, tracer);
+    final CallableStatement statement = connection.prepareCall(sql, resultSetType, resultSetConcurrency, resultSetHoldability);
+    return DynamicProxy.wrap(statement, new TracingCallableStatement(statement, sql,
+        connectionInfo, withActiveSpanOnly, ignoredStatements, tracer));
   }
 
   @Override
   public PreparedStatement prepareStatement(String sql, int autoGeneratedKeys) throws SQLException {
-    return new TracingPreparedStatement(connection.prepareStatement(sql, autoGeneratedKeys), sql,
-        connectionInfo, withActiveSpanOnly, ignoredStatements, tracer);
+    final PreparedStatement statement = connection.prepareStatement(sql, autoGeneratedKeys);
+    return DynamicProxy.wrap(statement, new TracingPreparedStatement(statement, sql,
+        connectionInfo, withActiveSpanOnly, ignoredStatements, tracer));
   }
 
   @Override
   public PreparedStatement prepareStatement(String sql, int[] columnIndexes) throws SQLException {
-    return new TracingPreparedStatement(connection.prepareStatement(sql, columnIndexes), sql,
-        connectionInfo, withActiveSpanOnly, ignoredStatements, tracer);
+    final PreparedStatement statement = connection.prepareStatement(sql, columnIndexes);
+    return DynamicProxy.wrap(statement, new TracingPreparedStatement(statement, sql,
+        connectionInfo, withActiveSpanOnly, ignoredStatements, tracer));
   }
 
   @Override
   public PreparedStatement prepareStatement(String sql, String[] columnNames) throws SQLException {
-    return new TracingPreparedStatement(connection.prepareStatement(sql, columnNames), sql,
-        connectionInfo,
-        withActiveSpanOnly, ignoredStatements, tracer);
+    final PreparedStatement statement = connection.prepareStatement(sql, columnNames);
+    return DynamicProxy.wrap(statement, new TracingPreparedStatement(statement, sql, connectionInfo,
+        withActiveSpanOnly, ignoredStatements, tracer));
   }
 
   @Override
