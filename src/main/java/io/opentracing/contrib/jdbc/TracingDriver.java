@@ -173,8 +173,8 @@ public class TracingDriver implements Driver {
       span.finish();
     }
 
-    return new TracingConnection(connection, connectionInfo, withActiveSpanOnly,
-        ignoreStatements, currentTracer);
+    return DynamicProxy.wrap(connection, new TracingConnection(connection, connectionInfo, withActiveSpanOnly,
+        ignoreStatements, currentTracer));
   }
 
   @Override
