@@ -22,13 +22,15 @@ import java.lang.reflect.Proxy;
  */
 public class DynamicProxy {
   @SuppressWarnings("unchecked")
-  public static <T>T wrap(final T target, final T wrapper) {
+  public static <T> T wrap(final T target, final T wrapper) {
     final Class<?> cls = target.getClass();
-    return (T)Proxy.newProxyInstance(cls.getClassLoader(), cls.getInterfaces(), new InvocationHandler() {
-      @Override
-      public Object invoke(final Object proxy, final Method method, final Object[] args) throws Throwable {
-        return method.invoke(wrapper, args);
-      }
-    });
+    return (T) Proxy
+        .newProxyInstance(cls.getClassLoader(), cls.getInterfaces(), new InvocationHandler() {
+          @Override
+          public Object invoke(final Object proxy, final Method method, final Object[] args)
+              throws Throwable {
+            return method.invoke(wrapper, args);
+          }
+        });
   }
 }
