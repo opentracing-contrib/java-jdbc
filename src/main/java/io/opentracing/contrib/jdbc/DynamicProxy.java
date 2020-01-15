@@ -24,20 +24,23 @@ import java.util.Set;
  */
 public class DynamicProxy {
   private static void recurse(final Class<?> iface, final Set<Class<?>> set) {
-    if (set.contains(iface))
+    if (set.contains(iface)) {
       return;
+    }
 
     set.add(iface);
-    for (final Class<?> extended : iface.getInterfaces())
+    for (final Class<?> extended : iface.getInterfaces()) {
       recurse(extended, set);
+    }
   }
 
   static Class<?>[] getAllInterfaces(final Class<?> cls) {
     Class<?> next = cls;
     final Set<Class<?>> ifaces = new HashSet<>();
     do {
-      for (final Class<?> iface : next.getInterfaces())
+      for (final Class<?> iface : next.getInterfaces()) {
         recurse(iface, ifaces);
+      }
 
       next = next.getSuperclass();
     }

@@ -13,10 +13,9 @@
  */
 package io.opentracing.contrib.jdbc;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
-
 import org.junit.Test;
 
 public class DynamicProxyTest {
