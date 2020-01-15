@@ -39,9 +39,11 @@ public class DynamicProxyTest {
   }
 
   private interface A {
+    void a();
   }
 
   private interface B extends A {
+    void b();
   }
 
   private interface C extends B {
@@ -50,39 +52,92 @@ public class DynamicProxyTest {
   private interface D {
   }
 
-  private class Bar implements C, D {
+  private static class Bar implements C, D {
+    @Override
+    public void b() {
+    }
+
+    @Override
+    public void a() {
+    }
   }
 
-  private class Foo extends Bar implements B {
+  private static class Foo extends Bar implements B {
   }
+
+  private static final Foo foo = new Foo();
+
+  private static final Bar bar = new Bar();
+
+  private static final A a = new A() {
+    @Override
+    public void a() {
+    }
+  };
+
+  private static final B b = new B() {
+    @Override
+    public void a() {
+    }
+
+    @Override
+    public void b() {
+    }
+  };
+
+  private static final C c = new C() {
+    @Override
+    public void a() {
+    }
+
+    @Override
+    public void b() {
+    }
+  };
+
+  private static final D d = new D() {};
 
   @Test
   public void testA() {
-    testGetAllInterfaces(new A() {}, A.class);
+    testGetAllInterfaces(new A() {
+      @Override
+      public void a() {
+      }
+    }, A.class);
   }
 
   @Test
   public void testB() {
-    testGetAllInterfaces(new B() {}, A.class, B.class);
+    testGetAllInterfaces(b, A.class, B.class);
   }
 
   @Test
   public void testC() {
-    testGetAllInterfaces(new C() {}, A.class, B.class, C.class);
+    testGetAllInterfaces(c, A.class, B.class, C.class);
   }
 
   @Test
   public void testD() {
-    testGetAllInterfaces(new D() {}, D.class);
+    testGetAllInterfaces(d, D.class);
   }
 
   @Test
   public void testFoo() {
-    testGetAllInterfaces(new Foo(), A.class, B.class, C.class, D.class);
+    testGetAllInterfaces(foo, A.class, B.class, C.class, D.class);
+
+    final B proxyB = DynamicProxy.wrap(foo, b);
+    assertTrue(proxyB instanceof A);
+    proxyB.a();
+    proxyB.b();
+
+    final A proxyA = DynamicProxy.wrap(foo, a);
+    assertTrue(proxyA instanceof B);
+    proxyA.a();
+    ((B)proxyA).b();
   }
 
   @Test
   public void testBar() {
-    testGetAllInterfaces(new Bar(), A.class, B.class, C.class, D.class);
+    testGetAllInterfaces(bar, A.class, B.class, C.class, D.class);
   }
 }
