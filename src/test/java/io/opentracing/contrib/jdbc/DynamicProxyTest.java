@@ -34,8 +34,8 @@ public class DynamicProxyTest {
     Arrays.sort(ifaces, comparator);
     Arrays.sort(expecteds, comparator);
     assertEquals(Arrays.toString(ifaces), Arrays.toString(expecteds));
-    for (final Class<?> iface : ifaces)
-      assertTrue(Arrays.stream(ifaces).anyMatch(i -> i == iface));
+    for (final Class<?> expected : expecteds)
+      assertTrue(Arrays.stream(ifaces).anyMatch(i -> i == expected));
   }
 
   private interface A {
