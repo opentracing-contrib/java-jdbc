@@ -57,7 +57,12 @@ public class DynamicProxy {
           @Override
           public Object invoke(final Object proxy, final Method method, final Object[] args)
               throws Throwable {
-            return method.invoke(wrapper, args);
+            try {
+              return method.invoke(wrapper, args);
+            }
+            catch (final IllegalArgumentException e) {
+              return method.invoke(target, args);
+            }
           }
         });
   }
