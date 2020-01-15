@@ -13,22 +13,41 @@
  */
 package io.opentracing.contrib.jdbc;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import org.junit.Test;
 
+@SuppressWarnings("all")
 public class DynamicProxyTest {
+  private static final Comparator<Class<?>> comparator = new Comparator<Class<?>>() {
+    @Override
+    public int compare(final Class<?> o1, final Class<?> o2) {
+      return o1.getName().compareTo(o2.getName());
+    }
+  };
+
+  private static void testGetAllInterfaces(final Object obj, final Class<?> ... expecteds) {
+    final Class<?>[] ifaces = DynamicProxy.getAllInterfaces(obj.getClass());
+    Arrays.sort(ifaces, comparator);
+    Arrays.sort(expecteds, comparator);
+    assertEquals(Arrays.toString(ifaces), Arrays.toString(expecteds));
+    for (final Class<?> iface : ifaces)
+      assertTrue(Arrays.stream(ifaces).anyMatch(i -> i == iface));
+  }
+
   private interface A {
   }
 
   private interface B extends A {
   }
 
-  private interface C {
+  private interface C extends B {
   }
 
-  private interface D extends B {
+  private interface D {
   }
 
   private class Bar implements C, D {
@@ -38,12 +57,32 @@ public class DynamicProxyTest {
   }
 
   @Test
-  public void test() {
-    final Foo foo = new Foo();
-    final Class<?>[] ifaces = DynamicProxy.getAllInterfaces(foo.getClass());
-    assertTrue(Arrays.stream(ifaces).anyMatch(i -> i == A.class));
-    assertTrue(Arrays.stream(ifaces).anyMatch(i -> i == B.class));
-    assertTrue(Arrays.stream(ifaces).anyMatch(i -> i == C.class));
-    assertTrue(Arrays.stream(ifaces).anyMatch(i -> i == D.class));
+  public void testA() {
+    testGetAllInterfaces(new A() {}, A.class);
+  }
+
+  @Test
+  public void testB() {
+    testGetAllInterfaces(new B() {}, A.class, B.class);
+  }
+
+  @Test
+  public void testC() {
+    testGetAllInterfaces(new C() {}, A.class, B.class, C.class);
+  }
+
+  @Test
+  public void testD() {
+    testGetAllInterfaces(new D() {}, D.class);
+  }
+
+  @Test
+  public void testFoo() {
+    testGetAllInterfaces(new Foo(), A.class, B.class, C.class, D.class);
+  }
+
+  @Test
+  public void testBar() {
+    testGetAllInterfaces(new Bar(), A.class, B.class, C.class, D.class);
   }
 }
