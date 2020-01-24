@@ -13,13 +13,8 @@
  */
 package io.opentracing.contrib.jdbc;
 
-import static io.opentracing.contrib.jdbc.JdbcTracingUtils.buildSpan;
+import static io.opentracing.contrib.jdbc.JdbcTracingUtils.*;
 
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.Tracer;
-import io.opentracing.contrib.jdbc.parser.URLParser;
-import io.opentracing.util.GlobalTracer;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -36,6 +31,13 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.contrib.common.WrapperProxy;
+import io.opentracing.contrib.jdbc.parser.URLParser;
+import io.opentracing.util.GlobalTracer;
 
 public class TracingDriver implements Driver {
 
@@ -173,7 +175,7 @@ public class TracingDriver implements Driver {
       span.finish();
     }
 
-    return DynamicProxy
+    return WrapperProxy
         .wrap(connection, new TracingConnection(connection, connectionInfo, withActiveSpanOnly,
             ignoreStatements, currentTracer));
   }
