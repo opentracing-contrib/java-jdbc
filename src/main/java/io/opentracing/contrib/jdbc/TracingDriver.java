@@ -176,7 +176,7 @@ public class TracingDriver implements Driver {
     }
 
     return WrapperProxy
-        .wrap(connection, new TracingConnection(connection, connectionInfo, withActiveSpanOnly,
+        .wrap(connection, new TracingConnectionWrapper(connection, connectionInfo, withActiveSpanOnly,
             ignoreStatements, currentTracer));
   }
 

@@ -74,7 +74,7 @@ public class TracingDataSource implements DataSource {
         }
 
         return WrapperProxy
-                .wrap(connection, new TracingConnection(connection, connectionInfo, withActiveSpanOnly,
+                .wrap(connection, new TracingConnectionWrapper(connection, connectionInfo, withActiveSpanOnly,
                         ignoreStatements, tracer));
     }
 
@@ -93,7 +93,7 @@ public class TracingDataSource implements DataSource {
         }
 
         return WrapperProxy
-                .wrap(connection, new TracingConnection(connection, connectionInfo, withActiveSpanOnly,
+                .wrap(connection, new TracingConnectionWrapper(connection, connectionInfo, withActiveSpanOnly,
                         ignoreStatements, tracer));
     }
 
