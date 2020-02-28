@@ -150,16 +150,17 @@ public class TracingDriver implements Driver {
 
     final Set<String> ignoreStatements;
     final boolean withActiveSpanOnly;
-    if (acceptsURL(url)) {
-      withActiveSpanOnly = url.contains(WITH_ACTIVE_SPAN_ONLY);
-      ignoreStatements = extractIgnoredStatements(url);
-      url = extractRealUrl(url);
-    } else if (!interceptorMode) {
-      return null;
-    } else {
+    if (interceptorMode) {
       withActiveSpanOnly = TracingDriver.withActiveSpanOnly;
       ignoreStatements = TracingDriver.ignoreStatements;
+    } else if (acceptsURL(url)) {
+      withActiveSpanOnly = url.contains(WITH_ACTIVE_SPAN_ONLY);
+      ignoreStatements = extractIgnoredStatements(url);
+    } else {
+      return null;
     }
+
+    url = extractRealUrl(url);
 
     // find the real driver for the URL
     final Driver wrappedDriver = findDriver(url);
@@ -182,7 +183,10 @@ public class TracingDriver implements Driver {
 
   @Override
   public boolean acceptsURL(String url) throws SQLException {
-    return url != null && url.startsWith(getUrlPrefix());
+    return url != null && (
+        url.startsWith(getUrlPrefix()) ||
+        (interceptorMode && url.startsWith("jdbc:"))
+    );
   }
 
   @Override

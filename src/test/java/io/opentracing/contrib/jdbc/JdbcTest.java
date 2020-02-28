@@ -26,16 +26,28 @@ import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Enumeration;
 import java.util.List;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 public class JdbcTest {
-  public static void assertGetDriver(final Connection connection) throws SQLException {
+  private static void assertGetDriver(final Connection connection) throws SQLException {
     final String originalURL = connection.getMetaData().getURL();
-    final Driver driver = DriverManager.getDriver(originalURL);
+    final Driver driver = getUnderlyingDriver(originalURL);
     assertEquals("org.h2.Driver", driver.getClass().getName());
+  }
+
+  private static Driver getUnderlyingDriver(final String url) throws SQLException {
+    final Enumeration<Driver> enumeration = DriverManager.getDrivers();
+    while (enumeration.hasMoreElements()) {
+      final Driver driver = enumeration.nextElement();
+      if (driver.acceptsURL(url) && !(driver instanceof TracingDriver)) {
+        return driver;
+      }
+    }
+    return null;
   }
 
   private static final MockTracer mockTracer = new MockTracer();
