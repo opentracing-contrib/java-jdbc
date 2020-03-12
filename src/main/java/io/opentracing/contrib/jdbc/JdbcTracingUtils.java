@@ -38,7 +38,7 @@ class JdbcTracingUtils {
       boolean withActiveSpanOnly,
       Set<String> ignoredStatements,
       Tracer tracer) {
-    if (!TracingDriver.isTraceEnabled() || withActiveSpanOnly && tracer.activeSpan() == null) {
+    if (!TracingDriver.isTraceEnabled() || (withActiveSpanOnly && tracer.activeSpan() == null)) {
       return NoopSpan.INSTANCE;
     } else if (ignoredStatements != null && ignoredStatements.contains(sql)) {
       return NoopSpan.INSTANCE;
