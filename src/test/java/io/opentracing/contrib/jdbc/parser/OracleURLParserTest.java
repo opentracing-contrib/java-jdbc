@@ -35,7 +35,9 @@ class OracleURLParserTest {
         Arguments.of("jdbc:oracle:thin:@localhost:1234/XEPDB1", "localhost:1234", "XEPDB1"), //
         Arguments.of("jdbc:oracle:thin:@//localhost:1234/XEPDB1", "localhost:1234", "XEPDB1"), //
         Arguments.of("jdbc:oracle:thin:@//localhost:1234/XEPDB1:server/instance", "localhost:1234",
-            "XEPDB1") //
+            "XEPDB1"), //
+        Arguments.of("jdbc:oracle:oci:@//localhost:1234/XEPDB1:server/instance", "localhost:1234",
+                "XEPDB1") //
     );
   }
 
@@ -46,6 +48,9 @@ class OracleURLParserTest {
                 "localhost:1521", "orcl"), //
         Arguments
             .of("jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL= TCP)(HOST=hostA)(PORT= 1523 ))(ADDRESS=(PROTOCOL=TCP)(HOST=hostB)(PORT= 1521 )))(SOURCE_ROUTE=yes)(CONNECT_DATA=(SERVICE_NAME=orcl)))",
+                "hostA:1523,hostB:1521", "orcl"), //
+        Arguments
+            .of("jdbc:oracle:oci:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL= TCP)(HOST=hostA)(PORT= 1523 ))(ADDRESS=(PROTOCOL=TCP)(HOST=hostB)(PORT= 1521 )))(SOURCE_ROUTE=yes)(CONNECT_DATA=(SERVICE_NAME=orcl)))",
                 "hostA:1523,hostB:1521", "orcl") //
     );
   }
@@ -56,7 +61,8 @@ class OracleURLParserTest {
         Arguments.of("jdbc:oracle:thin:@localhost:1522:orcl", "localhost:1522", "orcl"), //
         Arguments.of("jdbc:oracle:thin:@//localhost:1521/orcl", "localhost:1521", "orcl"), //
         Arguments.of("jdbc:oracle:thin:scott/tiger@myhost:1521:orcl", "myhost:1521", "orcl"), //
-        Arguments.of("jdbc:oracle:thin:@orcl", "orcl:1521", "orcl") //
+        Arguments.of("jdbc:oracle:thin:@orcl", "orcl:1521", "orcl"), //
+        Arguments.of("jdbc:oracle:oci:@orcl", "orcl:1521", "orcl") //
     );
   }
 
