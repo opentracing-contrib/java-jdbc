@@ -13,25 +13,33 @@
  */
 package io.opentracing.contrib.jdbc.parser;
 
-import io.opentracing.contrib.jdbc.ConnectionInfo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import io.opentracing.contrib.jdbc.ConnectionInfo;
+
 public class OracleURLParser implements ConnectionURLParser {
   public static final String DB_TYPE = "oracle";
-  public static final String PREFIX = "jdbc:oracle:thin:";
+  public static final String PREFIX_THIN = "jdbc:oracle:thin:";
+  public static final String PREFIX_OCI = "jdbc:oracle:oci:";
   public static final int DEFAULT_PORT = 1521;
   private static Pattern EASY_CONNECT_PATTERN = Pattern.compile(
       "(?<username>.*)@(//)?(?<host>[^:/]+)(?<port>:[0-9]+)?(?<service>[:/][^:/]+)?(?<server>:[^:/]+)?(?<instance>/[^:/]+)?");
 
   @Override
   public ConnectionInfo parse(final String url) {
-    if (url != null && url.startsWith(PREFIX)) {
-      OracleConnectionInfo connectionInfo = parseTnsName(url.substring(PREFIX.length()));
+    if (url != null && (url.startsWith(PREFIX_THIN) || url.startsWith(PREFIX_OCI))) {
+      String trimmedURL;
+      if (url.startsWith(PREFIX_THIN)) {
+        trimmedURL = url.substring(PREFIX_THIN.length());
+      } else {
+        trimmedURL = url.substring(PREFIX_OCI.length());
+      }
+      OracleConnectionInfo connectionInfo = parseTnsName(trimmedURL);
       if (connectionInfo == null) {
-        connectionInfo = parseEasyConnect(url.substring(PREFIX.length()));
+        connectionInfo = parseEasyConnect(trimmedURL);
       }
       if (connectionInfo != null) {
         return new ConnectionInfo.Builder(connectionInfo.getDbPeer()) //
