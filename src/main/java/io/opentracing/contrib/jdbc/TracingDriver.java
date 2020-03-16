@@ -13,8 +13,14 @@
  */
 package io.opentracing.contrib.jdbc;
 
-import static io.opentracing.contrib.jdbc.JdbcTracingUtils.*;
+import static io.opentracing.contrib.jdbc.JdbcTracingUtils.buildSpan;
 
+import io.opentracing.Scope;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
+import io.opentracing.contrib.common.WrapperProxy;
+import io.opentracing.contrib.jdbc.parser.URLParser;
+import io.opentracing.util.GlobalTracer;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
@@ -31,13 +37,6 @@ import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import io.opentracing.Scope;
-import io.opentracing.Span;
-import io.opentracing.Tracer;
-import io.opentracing.contrib.common.WrapperProxy;
-import io.opentracing.contrib.jdbc.parser.URLParser;
-import io.opentracing.util.GlobalTracer;
 
 public class TracingDriver implements Driver {
 
@@ -106,22 +105,22 @@ public class TracingDriver implements Driver {
     }
   }
 
-    private static boolean traceEnabled = true;
+  private static boolean traceEnabled = true;
 
-    /**
-     * Sets the {@code traceEnabled} property to enable or disable traces.
-     *
-     * @param traceEnabled The {@code traceEnabled} value.
-     */
-    public static void setTraceEnabled(boolean traceEnabled) {
-        TracingDriver.traceEnabled = traceEnabled;
-    }
+  /**
+   * Sets the {@code traceEnabled} property to enable or disable traces.
+   *
+   * @param traceEnabled The {@code traceEnabled} value.
+   */
+  public static void setTraceEnabled(boolean traceEnabled) {
+    TracingDriver.traceEnabled = traceEnabled;
+  }
 
-    public static boolean isTraceEnabled() {
-        return TracingDriver.traceEnabled;
-    }
+  public static boolean isTraceEnabled() {
+    return TracingDriver.traceEnabled;
+  }
 
-    private static boolean interceptorMode = false;
+  private static boolean interceptorMode = false;
 
   /**
    * Turns "interceptor mode" on or off.
@@ -200,7 +199,7 @@ public class TracingDriver implements Driver {
   public boolean acceptsURL(String url) throws SQLException {
     return url != null && (
         url.startsWith(getUrlPrefix()) ||
-        (interceptorMode && url.startsWith("jdbc:"))
+            (interceptorMode && url.startsWith("jdbc:"))
     );
   }
 

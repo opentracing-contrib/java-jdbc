@@ -13,6 +13,8 @@
  */
 package io.opentracing.contrib.jdbc;
 
+import io.opentracing.Tracer;
+import io.opentracing.contrib.common.WrapperProxy;
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.CallableStatement;
@@ -32,9 +34,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Executor;
-
-import io.opentracing.Tracer;
-import io.opentracing.contrib.common.WrapperProxy;
 
 public class TracingConnection implements Connection {
   private final Connection connection;

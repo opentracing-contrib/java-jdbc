@@ -37,7 +37,7 @@ class OracleURLParserTest {
         Arguments.of("jdbc:oracle:thin:@//localhost:1234/XEPDB1:server/instance", "localhost:1234",
             "XEPDB1"), //
         Arguments.of("jdbc:oracle:oci:@//localhost:1234/XEPDB1:server/instance", "localhost:1234",
-                "XEPDB1") //
+            "XEPDB1") //
     );
   }
 

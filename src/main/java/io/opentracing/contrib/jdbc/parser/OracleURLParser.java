@@ -13,12 +13,11 @@
  */
 package io.opentracing.contrib.jdbc.parser;
 
+import io.opentracing.contrib.jdbc.ConnectionInfo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import io.opentracing.contrib.jdbc.ConnectionInfo;
 
 public class OracleURLParser implements ConnectionURLParser {
   public static final String DB_TYPE = "oracle";

@@ -13,63 +13,64 @@
  */
 package io.opentracing.contrib.jdbc;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import io.opentracing.mock.MockSpan;
 import io.opentracing.mock.MockTracer;
 import io.opentracing.tag.Tags;
+import java.sql.Connection;
+import java.sql.SQLException;
 import org.apache.commons.dbcp2.BasicDataSource;
 import org.junit.Test;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
-import static org.junit.Assert.*;
-
 public class TracingDataSourceTest {
-    @Test
-    public void traces_acquiring_connection() throws SQLException {
-        final BasicDataSource dataSource = getDataSource();
-        final MockTracer mockTracer = new MockTracer();
-        final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer, dataSource);
+  @Test
+  public void traces_acquiring_connection() throws SQLException {
+    final BasicDataSource dataSource = getDataSource();
+    final MockTracer mockTracer = new MockTracer();
+    final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer, dataSource);
 
-        try (final Connection connection = tracingDataSource.getConnection()) {
-            assertFalse(mockTracer.finishedSpans().isEmpty());
-        }
+    try (final Connection connection = tracingDataSource.getConnection()) {
+      assertFalse(mockTracer.finishedSpans().isEmpty());
+    }
+  }
+
+  @Test
+  public void sets_error() {
+    final BasicDataSource dataSource = getErroneousDataSource();
+    final MockTracer mockTracer = new MockTracer();
+    final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer, dataSource);
+
+    try (final Connection connection = tracingDataSource.getConnection()) {
+      assertNull("Get connection", connection);
+    } catch (SQLException ignored) {
     }
 
-    @Test
-    public void sets_error() {
-        final BasicDataSource dataSource = getErroneousDataSource();
-        final MockTracer mockTracer = new MockTracer();
-        final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer, dataSource);
+    assertFalse(mockTracer.finishedSpans().isEmpty());
+    MockSpan finishedSpan = mockTracer.finishedSpans().get(0);
+    assertTrue("Span contains error tag", finishedSpan.tags().containsKey(Tags.ERROR.getKey()));
+  }
 
-        try (final Connection connection = tracingDataSource.getConnection()) {
-            assertNull("Get connection", connection);
-        }
-        catch (SQLException ignored) {}
+  @Test(expected = SQLException.class)
+  public void rethrows_any_error() throws SQLException {
+    final BasicDataSource dataSource = getErroneousDataSource();
+    final MockTracer mockTracer = new MockTracer();
+    final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer, dataSource);
 
-        assertFalse(mockTracer.finishedSpans().isEmpty());
-        MockSpan finishedSpan = mockTracer.finishedSpans().get(0);
-        assertTrue("Span contains error tag", finishedSpan.tags().containsKey(Tags.ERROR.getKey()));
-    }
+    tracingDataSource.getConnection();
+  }
 
-    @Test(expected = SQLException.class)
-    public void rethrows_any_error() throws SQLException {
-        final BasicDataSource dataSource = getErroneousDataSource();
-        final MockTracer mockTracer = new MockTracer();
-        final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer, dataSource);
+  private static BasicDataSource getDataSource() {
+    BasicDataSource dataSource = new BasicDataSource();
+    dataSource.setUrl("jdbc:h2:mem:dataSourceTest");
+    return dataSource;
+  }
 
-        tracingDataSource.getConnection();
-    }
-
-    private static BasicDataSource getDataSource() {
-        BasicDataSource dataSource = new BasicDataSource();
-        dataSource.setUrl("jdbc:h2:mem:dataSourceTest");
-        return dataSource;
-    }
-
-    private static BasicDataSource getErroneousDataSource() {
-        BasicDataSource dataSource = new BasicDataSource();
-        dataSource.setUrl("jdbc:invalid");
-        return dataSource;
-    }
+  private static BasicDataSource getErroneousDataSource() {
+    BasicDataSource dataSource = new BasicDataSource();
+    dataSource.setUrl("jdbc:invalid");
+    return dataSource;
+  }
 }
