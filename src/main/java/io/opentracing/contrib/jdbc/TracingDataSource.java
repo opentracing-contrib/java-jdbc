@@ -132,8 +132,8 @@ public class TracingDataSource implements DataSource, AutoCloseable {
 
   @Override
   public void close() throws Exception {
-    if(underlying instanceof AutoCloseable) {
-      ((AutoCloseable)underlying).close();
+    if (underlying instanceof AutoCloseable) {
+      ((AutoCloseable) underlying).close();
     }
   }
 }

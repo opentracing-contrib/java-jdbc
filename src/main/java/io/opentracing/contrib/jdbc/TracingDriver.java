@@ -59,16 +59,16 @@ public class TracingDriver implements Driver {
   }
 
   /**
-   *
    * @return The singleton instance of the {@code TracingDriver}.
    */
   public static Driver load() {
-      return INSTANCE;
+    return INSTANCE;
   }
 
   /**
-   * Ensure {@code TracingDriver} be the first driver of {@link DriverManager} to make sure "interceptor mode" works.
-   * WARNING: Driver like Oracle JDBC may fail since it's destroyed forever after deregistration.
+   * Ensure {@code TracingDriver} be the first driver of {@link DriverManager} to make sure
+   * "interceptor mode" works. WARNING: Driver like Oracle JDBC may fail since it's destroyed
+   * forever after deregistration.
    */
   public synchronized static void ensureRegisteredAsTheFirstDriver() {
     try {
