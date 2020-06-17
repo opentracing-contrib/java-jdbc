@@ -28,7 +28,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 import javax.sql.DataSource;
 
-public class TracingDataSource implements DataSource {
+public class TracingDataSource implements DataSource, AutoCloseable {
   private static final boolean DEFAULT_WITH_ACTIVE_SPAN_ONLY = false;
   private static final Set<String> DEFAULT_IGNORED_STATEMENTS = Collections.emptySet();
 
@@ -128,5 +128,12 @@ public class TracingDataSource implements DataSource {
   @Override
   public boolean isWrapperFor(final Class<?> iface) throws SQLException {
     return underlying.isWrapperFor(iface);
+  }
+
+  @Override
+  public void close() throws Exception {
+    if(underlying instanceof AutoCloseable) {
+      ((AutoCloseable)underlying).close();
+    }
   }
 }
