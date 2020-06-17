@@ -51,55 +51,45 @@ public class TracingDriver implements Driver {
   protected static final Pattern PATTERN_FOR_IGNORING = Pattern.compile(IGNORE_FOR_TRACING_REGEX);
 
   static {
-    load();
+    try {
+      DriverManager.registerDriver(INSTANCE);
+    } catch (SQLException e) {
+      throw new IllegalStateException("Could not register TracingDriver with DriverManager", e);
+    }
   }
 
   /**
-   * Load the {@code TracingDriver} into the {@link DriverManager}.<br> This method has the
-   * following behavior:
-   * <ol>
-   * <li>Deregister all previously registered drivers.</li>
-   * <li>Load {@code TracingDriver} as the first driver.</li>
-   * <li>Reregister all drivers that were just deregistered.</li>
-   * </ol>
    *
    * @return The singleton instance of the {@code TracingDriver}.
    */
-  public synchronized static Driver load() {
+  public static Driver load() {
+      return INSTANCE;
+  }
+
+  /**
+   * Ensure {@code TracingDriver} be the first driver of {@link DriverManager} to make sure "interceptor mode" works.
+   * WARNING: Driver like Oracle JDBC may fail since it's destroyed forever after deregistration.
+   */
+  public synchronized static void ensureRegisteredAsTheFirstDriver() {
     try {
-      final Enumeration<Driver> enumeration = DriverManager.getDrivers();
+      Enumeration<Driver> enumeration = DriverManager.getDrivers();
       List<Driver> drivers = null;
       for (int i = 0; enumeration.hasMoreElements(); ++i) {
-        final Driver driver = enumeration.nextElement();
+        Driver driver = enumeration.nextElement();
         if (i == 0) {
           if (driver == INSTANCE) {
-            return driver;
+            return;
           }
-
           drivers = new ArrayList<>();
         }
-
-        drivers.add(driver);
-      }
-
-      // Deregister all drivers
-      if (drivers != null) {
-        for (final Driver driver : drivers) {
+        if (driver != INSTANCE) {
+          drivers.add(driver);
           DriverManager.deregisterDriver(driver);
         }
       }
-
-      // Register TracingDriver as the first driver
-      DriverManager.registerDriver(INSTANCE);
-
-      // Reregister all drivers
-      if (drivers != null) {
-        for (final Driver driver : drivers) {
-          DriverManager.registerDriver(driver);
-        }
+      for (Driver driver : drivers) {
+        DriverManager.registerDriver(driver);
       }
-
-      return INSTANCE;
     } catch (SQLException e) {
       throw new IllegalStateException("Could not register TracingDriver with DriverManager", e);
     }
