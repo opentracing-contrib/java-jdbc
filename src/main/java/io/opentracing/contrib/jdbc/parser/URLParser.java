@@ -41,7 +41,7 @@ public class URLParser {
   /**
    * parse the url to the ConnectionInfo
    */
-  public static ConnectionInfo parser(String url) {
+  public static ConnectionInfo parse(String url) {
     if (null == url) {
       return ConnectionInfo.UNKNOWN_CONNECTION_INFO;
     }
@@ -56,6 +56,14 @@ public class URLParser {
       log.log(Level.WARNING, "error occurs when parsing jdbc url");
     }
     return ConnectionInfo.UNKNOWN_CONNECTION_INFO;
+  }
+
+  /**
+   * @deprecated use {@link #parse(String)} instead
+   */
+  @Deprecated
+  public static ConnectionInfo parser(String url) {
+    return parse(url);
   }
 
   private static ConnectionURLParser findURLParser(String lowerCaseUrl) {

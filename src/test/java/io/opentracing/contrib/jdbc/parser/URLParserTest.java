@@ -27,7 +27,7 @@ public class URLParserTest {
 
   @Test
   public void testParseMysqlJDBCURLWithHost() {
-    ConnectionInfo connectionInfo = URLParser.parser("jdbc:mysql//primaryhost/test");
+    ConnectionInfo connectionInfo = URLParser.parse("jdbc:mysql//primaryhost/test");
     assertEquals(MYSQL, connectionInfo.getDbType());
     assertEquals("test", connectionInfo.getDbInstance());
     assertEquals("primaryhost:3306", connectionInfo.getDbPeer());
@@ -36,7 +36,7 @@ public class URLParserTest {
 
   @Test
   public void testParseMysqlJDBCURLWithoutDB() {
-    ConnectionInfo connectionInfo = URLParser.parser("jdbc:mysql//primaryhost?profileSQL=true");
+    ConnectionInfo connectionInfo = URLParser.parse("jdbc:mysql//primaryhost?profileSQL=true");
     assertEquals(MYSQL, connectionInfo.getDbType());
     assertEquals("", connectionInfo.getDbInstance());
     assertEquals("primaryhost:3306", connectionInfo.getDbPeer());
@@ -45,7 +45,7 @@ public class URLParserTest {
 
   @Test
   public void testParseMysqlURLWithoutExplicitDBOrQueryString() {
-    ConnectionInfo connectionInfo = URLParser.parser("jdbc:mysql://primaryhost");
+    ConnectionInfo connectionInfo = URLParser.parse("jdbc:mysql://primaryhost");
     assertEquals(MYSQL, connectionInfo.getDbType());
     assertEquals("", connectionInfo.getDbInstance());
     assertEquals("primaryhost:3306", connectionInfo.getDbPeer());
@@ -86,7 +86,7 @@ public class URLParserTest {
 
   @Test
   public void testParseOracleJDBCURLWithHost() {
-    ConnectionInfo connectionInfo = URLParser.parser("jdbc:oracle:thin:@localhost:orcl");
+    ConnectionInfo connectionInfo = URLParser.parse("jdbc:oracle:thin:@localhost:orcl");
     assertEquals(ORACLE, connectionInfo.getDbType());
     assertEquals("orcl", connectionInfo.getDbInstance());
     assertEquals("localhost:1521", connectionInfo.getDbPeer());
@@ -95,7 +95,7 @@ public class URLParserTest {
 
   @Test
   public void testParseOracleJDBCURLWithHostAndPort() {
-    ConnectionInfo connectionInfo = URLParser.parser("jdbc:oracle:thin:@localhost:1522:orcl");
+    ConnectionInfo connectionInfo = URLParser.parse("jdbc:oracle:thin:@localhost:1522:orcl");
     assertEquals(ORACLE, connectionInfo.getDbType());
     assertEquals("orcl", connectionInfo.getDbInstance());
     assertEquals("localhost:1522", connectionInfo.getDbPeer());
@@ -104,7 +104,7 @@ public class URLParserTest {
 
   @Test
   public void testParseOracleServiceName() {
-    ConnectionInfo connectionInfo = URLParser.parser("jdbc:oracle:thin:@//localhost:1521/orcl");
+    ConnectionInfo connectionInfo = URLParser.parse("jdbc:oracle:thin:@//localhost:1521/orcl");
     assertEquals(ORACLE, connectionInfo.getDbType());
     assertEquals("orcl", connectionInfo.getDbInstance());
     assertEquals("localhost:1521", connectionInfo.getDbPeer());
@@ -113,7 +113,7 @@ public class URLParserTest {
 
   @Test
   public void testParseOracleTNSName() {
-    ConnectionInfo connectionInfo = URLParser.parser(
+    ConnectionInfo connectionInfo = URLParser.parse(
         "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST= localhost )(PORT= 1521))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=orcl)))");
     assertEquals(ORACLE, connectionInfo.getDbType());
     assertEquals("orcl", connectionInfo.getDbInstance());
@@ -123,7 +123,7 @@ public class URLParserTest {
 
   @Test
   public void testParseOracleTNSNameWithMultiAddress() {
-    ConnectionInfo connectionInfo = URLParser.parser(
+    ConnectionInfo connectionInfo = URLParser.parse(
         "jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL= TCP)(HOST=hostA)(PORT= 1523 ))(ADDRESS=(PROTOCOL=TCP)(HOST=hostB)(PORT= 1521 )))(SOURCE_ROUTE=yes)(CONNECT_DATA=(SERVICE_NAME=orcl)))");
     assertEquals(ORACLE, connectionInfo.getDbType());
     assertEquals("orcl", connectionInfo.getDbInstance());
@@ -153,7 +153,7 @@ public class URLParserTest {
 
   @Test
   public void testParseH2JDBCURLWithEmbedded() {
-    ConnectionInfo connectionInfo = URLParser.parser("jdbc:h2:file:/data/sample");
+    ConnectionInfo connectionInfo = URLParser.parse("jdbc:h2:file:/data/sample");
     assertEquals(H2, connectionInfo.getDbType());
     assertEquals("/data/sample", connectionInfo.getDbInstance());
     assertEquals("localhost:-1", connectionInfo.getDbPeer());
@@ -162,7 +162,7 @@ public class URLParserTest {
 
   @Test
   public void testParseH2JDBCURLWithEmbeddedRunningInWindows() {
-    ConnectionInfo connectionInfo = URLParser.parser("jdbc:h2:file:c:/data/sample");
+    ConnectionInfo connectionInfo = URLParser.parse("jdbc:h2:file:c:/data/sample");
     assertEquals(H2, connectionInfo.getDbType());
     assertEquals("c:/data/sample", connectionInfo.getDbInstance());
     assertEquals("localhost:-1", connectionInfo.getDbPeer());
@@ -171,7 +171,7 @@ public class URLParserTest {
 
   @Test
   public void testParseH2JDBCURLWithImplicitFile() {
-    ConnectionInfo connectionInfo = URLParser.parser("jdbc:h2:c:/data/sample");
+    ConnectionInfo connectionInfo = URLParser.parse("jdbc:h2:c:/data/sample");
     assertEquals(H2, connectionInfo.getDbType());
     assertEquals("c:/data/sample", connectionInfo.getDbInstance());
     assertEquals("localhost:-1", connectionInfo.getDbPeer());
@@ -180,7 +180,7 @@ public class URLParserTest {
 
   @Test
   public void testParseH2JDBCURLWithMemoryMode() {
-    ConnectionInfo connectionInfo = URLParser.parser("jdbc:h2:mem:test_mem");
+    ConnectionInfo connectionInfo = URLParser.parse("jdbc:h2:mem:test_mem");
 
     assertEquals(H2, connectionInfo.getDbType());
     assertEquals("test_mem", connectionInfo.getDbInstance());
@@ -190,7 +190,7 @@ public class URLParserTest {
 
   @Test
   public void testParseH2JDBCURL() {
-    ConnectionInfo connectionInfo = URLParser.parser("jdbc:h2:tcp://localhost:8084/~/sample");
+    ConnectionInfo connectionInfo = URLParser.parse("jdbc:h2:tcp://localhost:8084/~/sample");
     assertEquals(H2, connectionInfo.getDbType());
     assertEquals("sample", connectionInfo.getDbInstance());
     assertEquals("localhost:8084", connectionInfo.getDbPeer());
@@ -199,7 +199,7 @@ public class URLParserTest {
 
   @Test
   public void testParsePostgresqlJDBCURLWithHost() {
-    ConnectionInfo connectionInfo = URLParser.parser("jdbc:postgresql//primaryhost/test");
+    ConnectionInfo connectionInfo = URLParser.parse("jdbc:postgresql//primaryhost/test");
     assertEquals(POSTGRESQL, connectionInfo.getDbType());
     assertEquals("test", connectionInfo.getDbInstance());
     assertEquals("primaryhost:5432", connectionInfo.getDbPeer());
@@ -218,7 +218,7 @@ public class URLParserTest {
 
   @Test
   public void testParsePostgresqlJDBCURLWithMultiHost() {
-    ConnectionInfo connectionInfo = URLParser.parser(
+    ConnectionInfo connectionInfo = URLParser.parse(
         "jdbc:postgresql//primaryhost:3307,secondaryhost1,secondaryhost2/test?profileSQL=true");
     assertEquals(POSTGRESQL, connectionInfo.getDbType());
     assertEquals("test", connectionInfo.getDbInstance());
