@@ -59,11 +59,26 @@ pom.xml
 
 > Tracing for all JDBC connections without modifying the URL.
 
-In "interceptor mode", the `TracingDriver` will intercept calls to `DriverManager.getConnection(url,...)` for all URLs. The `TracingDriver` provides connections to the `DriverManager` that are instrumented. Turn on "interceptor mode" via:
+In "interceptor mode", the `TracingDriver` will intercept calls to `DriverManager.getConnection(url,...)` for all URLs. The `TracingDriver` provides connections to the `DriverManager` that are instrumented. Please note that the `TracingDriver` must be registered before the underlying driver, It's recommended to turn on "interceptor mode" in the first place. 
+
+For standalone applications:
 
 ```java
-io.opentracing.contrib.jdbc.TracingDriver.setInterceptorMode(true);
+public static void main(String[] args) {
+   io.opentracing.contrib.jdbc.TracingDriver.setInterceptorMode(true);
+   // some jdbc operation here
+}
+
 ```
+For web applications:
+
+```java
+public void contextInitialized(ServletContextEvent event) {
+   io.opentracing.contrib.jdbc.TracingDriver.setInterceptorMode(true);
+}
+```
+
+Or call `TracingDriver.ensureRegisteredAsTheFirstDriver()` along with `TracingDriver.setInterceptorMode(true)` at any place, Please note driver like Oracle JDBC may fail since it's destroyed forever after deregistration.
 
 The `withActiveSpanOnly` and `ignoreStatements` properties for "interceptor mode" can be configured with the `TracingDriver` via:
 

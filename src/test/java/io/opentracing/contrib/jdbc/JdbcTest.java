@@ -96,6 +96,7 @@ public class JdbcTest {
 
   @Test
   public void testPassOriginalUrl() throws Exception {
+    TracingDriver.ensureRegisteredAsTheFirstDriver();
     TracingDriver.setInterceptorMode(true);
     try (Connection connection = DriverManager.getConnection("jdbc:h2:mem:jdbc")) {
       Statement statement = connection.createStatement();
@@ -110,6 +111,7 @@ public class JdbcTest {
 
   @Test
   public void testFailOriginalUrl() throws Exception {
+    TracingDriver.ensureRegisteredAsTheFirstDriver();
     TracingDriver.setInterceptorMode(true);
     try (Connection connection = DriverManager.getConnection("jdbc:h2:mem:jdbc")) {
       Statement statement = connection.createStatement();
