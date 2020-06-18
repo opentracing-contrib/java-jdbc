@@ -56,6 +56,10 @@ public class TracingDataSource implements DataSource, AutoCloseable {
     this.ignoreStatements = ignoreStatements;
   }
 
+  public DataSource getUnderlying() {
+    return underlying;
+  }
+
   @Override
   public Connection getConnection() throws SQLException {
     final Span span = buildSpan("AcquireConnection", "", connectionInfo, withActiveSpanOnly,
