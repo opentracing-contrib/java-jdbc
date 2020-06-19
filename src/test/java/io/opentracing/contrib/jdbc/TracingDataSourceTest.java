@@ -27,25 +27,25 @@ import org.junit.Test;
 
 public class TracingDataSourceTest {
   @Test
-  public void traces_acquiring_connection() throws SQLException {
+  public void traces_acquiring_connection() throws Exception {
     final BasicDataSource dataSource = getDataSource();
     final MockTracer mockTracer = new MockTracer();
-    final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer, dataSource);
-
-    try (final Connection connection = tracingDataSource.getConnection()) {
-      assertFalse(mockTracer.finishedSpans().isEmpty());
+    try (final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer, dataSource)) {
+      try (final Connection connection = tracingDataSource.getConnection()) {
+        assertFalse(mockTracer.finishedSpans().isEmpty());
+      }
     }
   }
 
   @Test
-  public void sets_error() {
+  public void sets_error() throws Exception {
     final BasicDataSource dataSource = getErroneousDataSource();
     final MockTracer mockTracer = new MockTracer();
-    final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer, dataSource);
-
-    try (final Connection connection = tracingDataSource.getConnection()) {
-      assertNull("Get connection", connection);
-    } catch (SQLException ignored) {
+    try (final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer, dataSource)) {
+      try (final Connection connection = tracingDataSource.getConnection()) {
+        assertNull("Get connection", connection);
+      } catch (SQLException ignored) {
+      }
     }
 
     assertFalse(mockTracer.finishedSpans().isEmpty());
@@ -54,12 +54,12 @@ public class TracingDataSourceTest {
   }
 
   @Test(expected = SQLException.class)
-  public void rethrows_any_error() throws SQLException {
+  public void rethrows_any_error() throws Exception {
     final BasicDataSource dataSource = getErroneousDataSource();
     final MockTracer mockTracer = new MockTracer();
-    final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer, dataSource);
-
-    tracingDataSource.getConnection();
+    try (final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer, dataSource)) {
+      tracingDataSource.getConnection();
+    }
   }
 
   private static BasicDataSource getDataSource() {
