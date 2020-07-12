@@ -132,6 +132,34 @@ For dbcp2:
 
 ```
 
+### Spring Boot 2
+
+For Hikari (Postgresl):
+
+```properties
+### Spring JPA Datasource Connection
+spring.datasource.username=postgres
+spring.datasource.password=XXXXX
+spring.datasource.hikari.driverClassName=io.opentracing.contrib.jdbc.TracingDriver
+spring.datasource.hikari.jdbcUrl=jdbc:tracing:postgresql://localhost:5432/my_app_db
+
+```
+Configuration Bean:
+```java
+@Component
+public class OpenTracingConfig {
+  
+  @Bean
+  public io.opentracing.Tracer jaegerTracer() {
+    io.opentracing.contrib.jdbc.TracingDriver.load();
+    return new Configuration("my_app").getTracer();
+  }
+}
+
+```
+
+
+
 ## Troubleshooting
 In case of _Unable to find a driver_ error the database driver should be registered before configuring
 the datasource.
