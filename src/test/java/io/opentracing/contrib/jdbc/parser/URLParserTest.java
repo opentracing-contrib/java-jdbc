@@ -199,11 +199,35 @@ public class URLParserTest {
 
   @Test
   public void testParsePostgresqlJDBCURLWithHost() {
-    ConnectionInfo connectionInfo = URLParser.parse("jdbc:postgresql//primaryhost/test");
+    ConnectionInfo connectionInfo = URLParser.parse("jdbc:postgresql://primaryhost/test");
     assertEquals(POSTGRESQL, connectionInfo.getDbType());
     assertEquals("test", connectionInfo.getDbInstance());
     assertEquals("primaryhost:5432", connectionInfo.getDbPeer());
     assertEquals("test[postgresql(primaryhost:5432)]", connectionInfo.getPeerService());
+  }
+  
+  @Test
+  public void testParsePostgresqlJDBCURLWithIpv6Host() {
+    ConnectionInfo connectionInfo = URLParser.parse("jdbc:postgresql://[::1]/test");
+    assertEquals(POSTGRESQL, connectionInfo.getDbType());
+    assertEquals("test", connectionInfo.getDbInstance());
+    assertEquals("[::1]:5432", connectionInfo.getDbPeer());
+    assertEquals("test[postgresql([::1]:5432)]", connectionInfo.getPeerService());
+  }
+  
+  @Test
+  public void testParsePostgresqlIllegalUrl() {
+    ConnectionInfo connectionInfo = URLParser.parse("jdbc:postgresql://[::1 ]");
+    assertEquals(ConnectionInfo.UNKNOWN_CONNECTION_INFO, connectionInfo);
+  }
+
+  @Test
+  public void testParsePostgresqlJDBCURLWithIpv6HostAndPort() {
+    ConnectionInfo connectionInfo = URLParser.parse("jdbc:postgresql://[::1]:1234/test");
+    assertEquals(POSTGRESQL, connectionInfo.getDbType());
+    assertEquals("test", connectionInfo.getDbInstance());
+    assertEquals("[::1]:1234", connectionInfo.getDbPeer());
+    assertEquals("test[postgresql([::1]:1234)]", connectionInfo.getPeerService());
   }
 
   @Test

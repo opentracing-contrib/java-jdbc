@@ -14,6 +14,8 @@
 package io.opentracing.contrib.jdbc.parser;
 
 import io.opentracing.contrib.jdbc.ConnectionInfo;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class PostgreSQLURLParser extends AbstractURLParser {
 
@@ -45,11 +47,10 @@ public class PostgreSQLURLParser extends AbstractURLParser {
     if (hostSegment.length > 1) {
       StringBuilder sb = new StringBuilder();
       for (String host : hostSegment) {
-        if (host.split(":").length == 1) {
-          sb.append(host + ":" + DEFAULT_PORT + ",");
-        } else {
-          sb.append(host + ",");
-        }
+        URI uri = parseHost(host);
+        int port = uri.getPort() == -1 ? DEFAULT_PORT : uri.getPort();
+
+        sb.append(uri.getHost() + ":" + port + ",");
       }
       if (',' == sb.charAt(sb.length() - 1)) {
         sb.deleteCharAt(sb.length() - 1);
@@ -57,14 +58,19 @@ public class PostgreSQLURLParser extends AbstractURLParser {
       return new ConnectionInfo.Builder(sb.toString()).dbType(DB_TYPE)
           .dbInstance(fetchDatabaseNameFromURL(url)).build();
     } else {
-      String[] hostAndPort = hostSegment[0].split(":");
-      if (hostAndPort.length != 1) {
-        return new ConnectionInfo.Builder(hostAndPort[0], Integer.valueOf(hostAndPort[1]))
-            .dbType(DB_TYPE).dbInstance(fetchDatabaseNameFromURL(url)).build();
-      } else {
-        return new ConnectionInfo.Builder(hostAndPort[0], DEFAULT_PORT).dbType(DB_TYPE)
-            .dbInstance(fetchDatabaseNameFromURL(url)).build();
-      }
+      URI uri = parseHost(hostSegment[0]);
+      int port = uri.getPort() == -1 ? DEFAULT_PORT : uri.getPort();
+
+      return new ConnectionInfo.Builder(uri.getHost(), port)
+          .dbType(DB_TYPE).dbInstance(fetchDatabaseNameFromURL(url)).build();
+    }
+  }
+
+  private URI parseHost(String host) {
+    try {
+      return new URI("proto://" + host);
+    } catch (URISyntaxException e) {
+      throw new IllegalArgumentException(e);
     }
   }
 }
