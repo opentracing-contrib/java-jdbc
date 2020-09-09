@@ -24,6 +24,7 @@ public class URLParserTest {
   private static final String ORACLE = "oracle";
   private static final String POSTGRESQL = "postgresql";
   private static final String H2 = "h2";
+  private static final String MARIADB= "mariadb";
 
   @Test
   public void testParseMysqlJDBCURLWithHost() {
@@ -268,5 +269,25 @@ public class URLParserTest {
     ConnectionInfo connectionInfo = URLParser
         .parser("jdbc:unknown_type//primaryhost?profileSQL=true");
     assertEquals(ConnectionInfo.UNKNOWN_CONNECTION_INFO, connectionInfo);
+  }
+
+  @Test
+  public void testParseMariadbJDBCURLWithConnectorJs() {
+    ConnectionInfo connectionInfo = URLParser
+            .parser("jdbc:mariadb://mdb.host:33/mdbdb?user=mdbuser&password=PW");
+    assertEquals(MARIADB, connectionInfo.getDbType());
+    assertEquals("mdbdb", connectionInfo.getDbInstance());
+    assertEquals("mdb.host:33", connectionInfo.getDbPeer());
+    assertEquals("mdbdb[mariadb(mdb.host:33)]", connectionInfo.getPeerService());
+  }
+
+  @Test
+  public void testParseMariadbJDBCURLWithAurora() {
+    ConnectionInfo connectionInfo = URLParser
+            .parser("jdbc:mariadb:aurora://mdb.host/mdbdb");
+    assertEquals(MARIADB, connectionInfo.getDbType());
+    assertEquals("mdbdb", connectionInfo.getDbInstance());
+    assertEquals("mdb.host:3306", connectionInfo.getDbPeer());
+    assertEquals("mdbdb[mariadb(mdb.host:3306)]", connectionInfo.getPeerService());
   }
 }
