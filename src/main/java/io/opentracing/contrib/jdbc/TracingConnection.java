@@ -91,17 +91,20 @@ public class TracingConnection implements Connection {
 
   @Override
   public void commit() throws SQLException {
-    connection.commit();
+    JdbcTracingUtils.execute("Commit", () -> connection.commit(),
+        connectionInfo, withActiveSpanOnly, tracer);
   }
 
   @Override
   public void rollback() throws SQLException {
-    connection.rollback();
+    JdbcTracingUtils.execute("Rollback", () -> connection.rollback(),
+        connectionInfo, withActiveSpanOnly, tracer);
   }
 
   @Override
   public void close() throws SQLException {
-    connection.close();
+    JdbcTracingUtils.execute("Close", () -> connection.close(),
+        connectionInfo, withActiveSpanOnly, tracer);
   }
 
   @Override

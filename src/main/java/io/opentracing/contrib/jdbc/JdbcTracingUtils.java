@@ -13,6 +13,7 @@
  */
 package io.opentracing.contrib.jdbc;
 
+import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.noop.NoopSpan;
@@ -51,6 +52,27 @@ class JdbcTracingUtils {
     decorate(span, sql, connectionInfo);
 
     return span;
+  }
+
+  static <E extends Exception> void execute(String operationName,
+      CheckedRunnable<E> runnable,
+      ConnectionInfo connectionInfo,
+      boolean withActiveSpanOnly,
+      Tracer tracer) throws E {
+    if (!TracingDriver.isTraceEnabled() || (withActiveSpanOnly && tracer.activeSpan() == null)) {
+      return;
+    }
+
+    final Span span = buildSpan(operationName, "", connectionInfo, withActiveSpanOnly,
+            null, tracer);
+     try (Scope ignored = tracer.activateSpan(span)) {
+       runnable.run();
+     } catch (Exception e) {
+       JdbcTracingUtils.onError(e, span);
+       throw e;
+     } finally {
+       span.finish();
+     }
   }
 
   private static boolean isNotEmpty(CharSequence s) {
@@ -96,5 +118,12 @@ class JdbcTracingUtils {
     errorLogs.put("event", Tags.ERROR.getKey());
     errorLogs.put("error.object", throwable);
     return errorLogs;
+  }
+
+  @FunctionalInterface
+  interface CheckedRunnable<E extends Throwable> {
+
+    void run() throws E;
+
   }
 }

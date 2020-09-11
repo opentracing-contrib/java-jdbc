@@ -58,7 +58,7 @@ public class JdbcTracingUtilsTest {
     }
 
     List<MockSpan> spans = mockTracer.finishedSpans();
-    assertEquals(2, spans.size());
+    assertEquals(3, spans.size());
     checkNoEmptyTags(spans);
   }
 
