@@ -47,16 +47,16 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
   private final String query;
 
   public TracingPreparedStatement(PreparedStatement preparedStatement, String query,
-      ConnectionInfo connectionInfo, boolean withActiveSpanOnly, Set<String> ignoredStatements,
+      ConnectionInfo connectionInfo, boolean withActiveSpanOnly, Set<String> ignoreStatements,
       Tracer tracer) {
-    super(preparedStatement, query, connectionInfo, withActiveSpanOnly, ignoredStatements, tracer);
+    super(preparedStatement, query, connectionInfo, withActiveSpanOnly, ignoreStatements, tracer);
     this.preparedStatement = preparedStatement;
     this.query = query;
   }
 
   @Override
   public ResultSet executeQuery() throws SQLException {
-    Span span = buildSpan("Query", query, connectionInfo, withActiveSpanOnly, ignoredStatements,
+    Span span = buildSpan("Query", query, connectionInfo, withActiveSpanOnly, ignoreStatements,
         tracer);
     try (Scope ignored = tracer.activateSpan(span)) {
       return preparedStatement.executeQuery();
@@ -70,7 +70,7 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
 
   @Override
   public int executeUpdate() throws SQLException {
-    Span span = buildSpan("Update", query, connectionInfo, withActiveSpanOnly, ignoredStatements,
+    Span span = buildSpan("Update", query, connectionInfo, withActiveSpanOnly, ignoreStatements,
         tracer);
     try (Scope ignored = tracer.activateSpan(span)) {
       return preparedStatement.executeUpdate();
@@ -186,7 +186,7 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
   @Override
   public boolean execute() throws SQLException {
     Span span = buildSpan("Execute", query, connectionInfo, withActiveSpanOnly,
-        ignoredStatements, tracer);
+        ignoreStatements, tracer);
     try (Scope ignored = tracer.activateSpan(span)) {
       return preparedStatement.execute();
     } catch (Exception e) {
