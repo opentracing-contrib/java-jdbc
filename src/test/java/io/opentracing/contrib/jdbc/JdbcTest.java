@@ -72,7 +72,7 @@ public class JdbcTest {
     }
 
     List<MockSpan> spans = mockTracer.finishedSpans();
-    assertEquals(2, spans.size());
+    assertEquals(3, spans.size());
     checkNoEmptyTags(spans);
   }
 
@@ -88,7 +88,7 @@ public class JdbcTest {
     }
 
     List<MockSpan> spans = mockTracer.finishedSpans();
-    assertEquals(2, spans.size());
+    assertEquals(3, spans.size());
     MockSpan span = spans.get(1);
     assertTrue(span.tags().containsKey(Tags.ERROR.getKey()));
     checkNoEmptyTags(spans);
@@ -105,7 +105,7 @@ public class JdbcTest {
     }
 
     List<MockSpan> spans = mockTracer.finishedSpans();
-    assertEquals(2, spans.size());
+    assertEquals(3, spans.size());
     checkNoEmptyTags(spans);
   }
 
@@ -123,7 +123,7 @@ public class JdbcTest {
     }
 
     List<MockSpan> spans = mockTracer.finishedSpans();
-    assertEquals(2, spans.size());
+    assertEquals(3, spans.size());
     MockSpan span = spans.get(1);
     assertTrue(span.tags().containsKey(Tags.ERROR.getKey()));
     checkNoEmptyTags(spans);

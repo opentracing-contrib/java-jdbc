@@ -78,9 +78,9 @@ public class SpringTest {
     dataSource.close();
 
     List<MockSpan> spans = mockTracer.finishedSpans();
-    assertEquals(DB_CONNECTION_SPAN_COUNT + 2, spans.size());
+    assertEquals(DB_CONNECTION_SPAN_COUNT + 4, spans.size());
 
-    for (MockSpan span : spans.subList(DB_CONNECTION_SPAN_COUNT, spans.size() - 1)) {
+    for (MockSpan span : spans.subList(DB_CONNECTION_SPAN_COUNT + 2, spans.size() - 1)) {
       assertEquals(Tags.SPAN_KIND_CLIENT, span.tags().get(Tags.SPAN_KIND.getKey()));
       assertEquals(JdbcTracingUtils.COMPONENT_NAME, span.tags().get(Tags.COMPONENT.getKey()));
       assertThat(span.tags().get(Tags.DB_STATEMENT.getKey()).toString()).isNotEmpty();
@@ -104,8 +104,8 @@ public class SpringTest {
     dataSource.close();
 
     List<MockSpan> finishedSpans = mockTracer.finishedSpans();
-    assertEquals(DB_CONNECTION_SPAN_COUNT + 1, finishedSpans.size());
-    MockSpan mockSpan = finishedSpans.get(DB_CONNECTION_SPAN_COUNT);
+    assertEquals(DB_CONNECTION_SPAN_COUNT + 3, finishedSpans.size());
+    MockSpan mockSpan = finishedSpans.get(DB_CONNECTION_SPAN_COUNT + 1);
 
     assertEquals(Tags.SPAN_KIND_CLIENT, mockSpan.tags().get(Tags.SPAN_KIND.getKey()));
     assertEquals(JdbcTracingUtils.COMPONENT_NAME, mockSpan.tags().get(Tags.COMPONENT.getKey()));
@@ -149,7 +149,7 @@ public class SpringTest {
     parent.finish();
 
     List<MockSpan> spans = mockTracer.finishedSpans();
-    assertEquals(DB_CONNECTION_SPAN_COUNT + 3, spans.size());
+    assertEquals(DB_CONNECTION_SPAN_COUNT + 5, spans.size());
 
     checkSameTrace(spans);
     checkNoEmptyTags(spans);
@@ -170,7 +170,7 @@ public class SpringTest {
     parent.finish();
 
     List<MockSpan> spans = mockTracer.finishedSpans();
-    assertEquals(DB_CONNECTION_SPAN_COUNT + 3, spans.size());
+    assertEquals(DB_CONNECTION_SPAN_COUNT + 5, spans.size());
 
     checkSameTrace(spans);
     checkNoEmptyTags(spans);
@@ -191,7 +191,7 @@ public class SpringTest {
     dataSource.close();
 
     List<MockSpan> finishedSpans = mockTracer.finishedSpans();
-    assertEquals(DB_CONNECTION_SPAN_COUNT + 1, finishedSpans.size());
+    assertEquals(DB_CONNECTION_SPAN_COUNT + 3, finishedSpans.size());
     checkNoEmptyTags(finishedSpans);
   }
 

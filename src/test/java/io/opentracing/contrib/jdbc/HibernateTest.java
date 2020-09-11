@@ -77,7 +77,7 @@ public class HibernateTest {
     assertNotNull(employee.id);
 
     List<MockSpan> finishedSpans = mockTracer.finishedSpans();
-    assertEquals(9, finishedSpans.size());
+    assertEquals(14, finishedSpans.size());
 
     checkSpans(finishedSpans, "jpa");
     assertNull(mockTracer.activeSpan());
@@ -122,7 +122,7 @@ public class HibernateTest {
     parent.finish();
 
     List<MockSpan> spans = mockTracer.finishedSpans();
-    assertEquals(12, spans.size());
+    assertEquals(17, spans.size());
     checkSameTrace(spans);
     assertNull(mockTracer.activeSpan());
   }
@@ -146,7 +146,7 @@ public class HibernateTest {
     parent.finish();
 
     List<MockSpan> spans = mockTracer.finishedSpans();
-    assertEquals(12, spans.size());
+    assertEquals(17, spans.size());
     checkSameTrace(spans);
     assertNull(mockTracer.activeSpan());
   }
@@ -166,7 +166,7 @@ public class HibernateTest {
     assertNotNull(employee.id);
 
     List<MockSpan> finishedSpans = mockTracer.finishedSpans();
-    assertEquals(9, finishedSpans.size());
+    assertEquals(14, finishedSpans.size());
 
     checkSpans(finishedSpans, "hibernate");
     assertNull(mockTracer.activeSpan());
@@ -209,7 +209,7 @@ public class HibernateTest {
     parent.finish();
 
     List<MockSpan> spans = mockTracer.finishedSpans();
-    assertEquals(12, spans.size());
+    assertEquals(17, spans.size());
     checkSameTrace(spans);
     assertNull(mockTracer.activeSpan());
   }
@@ -231,7 +231,7 @@ public class HibernateTest {
     parent.finish();
 
     List<MockSpan> spans = mockTracer.finishedSpans();
-    assertEquals(12, spans.size());
+    assertEquals(17, spans.size());
     checkSameTrace(spans);
     assertNull(mockTracer.activeSpan());
   }
@@ -252,7 +252,7 @@ public class HibernateTest {
     assertNotNull(employee.id);
 
     List<MockSpan> finishedSpans = mockTracer.finishedSpans();
-    assertEquals(8, finishedSpans.size());
+    assertEquals(13, finishedSpans.size());
 
     checkSpans(finishedSpans, "hibernate");
     assertNull(mockTracer.activeSpan());
