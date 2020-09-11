@@ -29,6 +29,7 @@ public class URLParser {
   private static final String MARIADB_JDBC_URL_PREFIX = "jdbc:mariadb";
   private static final String SQLSERVER_JDBC_URL_PREFIX = "jdbc:sqlserver";
   private static final String DB2_JDBC_URL_PREFIX = "jdbc:db2";
+  private static final String AS400_JDBC_URL_PREFIX = "jdbc:as400";
   private static final Map<String, ConnectionURLParser> parserRegister = new LinkedHashMap<>();
 
   static {
@@ -40,6 +41,7 @@ public class URLParser {
     parserRegister.put(MARIADB_JDBC_URL_PREFIX, new MariadbURLParser());
     parserRegister.put(SQLSERVER_JDBC_URL_PREFIX, new SqlServerURLParser());
     parserRegister.put(DB2_JDBC_URL_PREFIX, new DB2URLParser());
+    parserRegister.put(AS400_JDBC_URL_PREFIX, new AS400URLParser());
   }
 
   /**

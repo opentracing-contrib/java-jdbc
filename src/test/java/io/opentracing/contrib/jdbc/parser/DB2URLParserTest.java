@@ -61,7 +61,7 @@ public class DB2URLParserTest {
 
     @Test
     public void testNotMatch() {
-        String url = "jdbc:another://myhost";
+        String url = "jdbc:db2:notmatching";
         ConnectionInfo connectionInfo = URLParser.parse(url);
         assertThat(connectionInfo, is(equalTo(ConnectionInfo.UNKNOWN_CONNECTION_INFO)));
     }
