@@ -360,4 +360,23 @@ public class TracingConnection implements Connection {
   public boolean isWrapperFor(Class<?> iface) throws SQLException {
     return connection.isWrapperFor(iface);
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+        return true;
+    }
+    if (WrapperProxy.isWrapper(obj, getClass())) {
+      return obj.equals(this); // trick to get through the WrapperProxy/Proxy instances
+    }
+    if (!(obj instanceof Connection)) {
+        return false;
+    }
+    if (obj instanceof TracingConnection) {
+        return connection.equals(((TracingConnection) obj).connection);
+    } else {
+        return connection.equals(obj);
+    }
+  }
+
 }
