@@ -13,6 +13,7 @@
  */
 package io.opentracing.contrib.jdbc;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -60,6 +61,18 @@ public class TracingDataSourceTest {
     try (final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer, dataSource)) {
       tracingDataSource.getConnection();
     }
+  }
+
+  @Test
+  public void detect_connection_info() throws Exception {
+    final BasicDataSource dataSource = getDataSource();
+    final MockTracer mockTracer = new MockTracer();
+    try (final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer, dataSource)) {
+      tracingDataSource.getConnection();
+    }
+    assertFalse(mockTracer.finishedSpans().isEmpty());
+    MockSpan finishedSpan = mockTracer.finishedSpans().get(0);
+    assertEquals("Span contains tag db.type=h2", "h2", finishedSpan.tags().get(Tags.DB_TYPE.getKey()));
   }
 
   private static BasicDataSource getDataSource() {

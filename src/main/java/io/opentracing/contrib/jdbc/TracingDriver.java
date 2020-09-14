@@ -166,7 +166,7 @@ public class TracingDriver implements Driver {
     final Driver wrappedDriver = findDriver(url);
 
     final Tracer currentTracer = getTracer();
-    final ConnectionInfo connectionInfo = URLParser.parser(url);
+    final ConnectionInfo connectionInfo = URLParser.parse(url);
     final String realUrl = url;
     final Connection connection = JdbcTracingUtils.call("AcquireConnection", () -> 
         wrappedDriver.connect(realUrl, info), null, connectionInfo, withActiveSpanOnly,

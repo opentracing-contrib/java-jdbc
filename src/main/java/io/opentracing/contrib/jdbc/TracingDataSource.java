@@ -16,7 +16,9 @@ package io.opentracing.contrib.jdbc;
 
 import io.opentracing.Tracer;
 import io.opentracing.contrib.common.WrapperProxy;
+import io.opentracing.contrib.jdbc.parser.URLParser;
 import java.io.PrintWriter;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -37,7 +39,7 @@ public class TracingDataSource implements DataSource, AutoCloseable {
 
   public TracingDataSource(final Tracer tracer,
       final DataSource underlying) {
-    this(tracer, underlying, ConnectionInfo.UNKNOWN_CONNECTION_INFO, DEFAULT_WITH_ACTIVE_SPAN_ONLY,
+    this(tracer, underlying, null, DEFAULT_WITH_ACTIVE_SPAN_ONLY,
         DEFAULT_IGNORED_STATEMENTS);
   }
 
@@ -48,7 +50,25 @@ public class TracingDataSource implements DataSource, AutoCloseable {
       final Set<String> ignoreStatements) {
     this.tracer = tracer;
     this.underlying = underlying;
-    this.connectionInfo = connectionInfo;
+    ConnectionInfo info = connectionInfo;
+    if (info == null) {
+      try {
+        Method method;
+        try {
+          method = underlying.getClass().getMethod("getJdbcUrl");
+        } catch (NoSuchMethodException e) {
+          try {
+            method = underlying.getClass().getMethod("getUrl");
+          } catch (NoSuchMethodException nsme) {
+            method = null;
+          }
+        }
+        info = URLParser.parse((String) method.invoke(underlying));
+      } catch (Exception ignored) {
+        info = ConnectionInfo.UNKNOWN_CONNECTION_INFO;
+      }
+    }
+    this.connectionInfo = info;
     this.withActiveSpanOnly = withActiveSpanOnly;
     this.ignoreStatements = ignoreStatements;
   }
