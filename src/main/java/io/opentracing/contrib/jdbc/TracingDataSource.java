@@ -13,10 +13,7 @@
  */
 package io.opentracing.contrib.jdbc;
 
-import static io.opentracing.contrib.jdbc.JdbcTracingUtils.buildSpan;
 
-import io.opentracing.Scope;
-import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.common.WrapperProxy;
 import java.io.PrintWriter;
@@ -62,17 +59,8 @@ public class TracingDataSource implements DataSource, AutoCloseable {
 
   @Override
   public Connection getConnection() throws SQLException {
-    final Span span = buildSpan("AcquireConnection", "", connectionInfo, withActiveSpanOnly,
-        ignoreStatements, tracer);
-    final Connection connection;
-    try (Scope ignored = tracer.activateSpan(span)) {
-      connection = underlying.getConnection();
-    } catch (Exception e) {
-      JdbcTracingUtils.onError(e, span);
-      throw e;
-    } finally {
-      span.finish();
-    }
+    final Connection connection = JdbcTracingUtils.call("AcquireConnection", underlying::getConnection,
+        null, connectionInfo, withActiveSpanOnly, null, tracer);
 
     return WrapperProxy
         .wrap(connection, new TracingConnection(connection, connectionInfo, withActiveSpanOnly,
@@ -82,17 +70,9 @@ public class TracingDataSource implements DataSource, AutoCloseable {
   @Override
   public Connection getConnection(final String username, final String password)
       throws SQLException {
-    final Span span = buildSpan("AcquireConnection", "", connectionInfo, withActiveSpanOnly,
-        ignoreStatements, tracer);
-    final Connection connection;
-    try (Scope ignored = tracer.activateSpan(span)) {
-      connection = underlying.getConnection(username, password);
-    } catch (Exception e) {
-      JdbcTracingUtils.onError(e, span);
-      throw e;
-    } finally {
-      span.finish();
-    }
+    final Connection connection = JdbcTracingUtils.call("AcquireConnection", () -> 
+        underlying.getConnection(username, password), null, connectionInfo,
+        withActiveSpanOnly, null, tracer);
 
     return WrapperProxy
         .wrap(connection, new TracingConnection(connection, connectionInfo, withActiveSpanOnly,

@@ -13,10 +13,6 @@
  */
 package io.opentracing.contrib.jdbc;
 
-import static io.opentracing.contrib.jdbc.JdbcTracingUtils.buildSpan;
-
-import io.opentracing.Scope;
-import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.common.WrapperProxy;
 import io.opentracing.contrib.jdbc.parser.URLParser;
@@ -171,14 +167,10 @@ public class TracingDriver implements Driver {
 
     final Tracer currentTracer = getTracer();
     final ConnectionInfo connectionInfo = URLParser.parser(url);
-    final Span span = buildSpan("AcquireConnection", "", connectionInfo, withActiveSpanOnly,
-        Collections.<String>emptySet(), currentTracer);
-    final Connection connection;
-    try (Scope ignored = currentTracer.activateSpan(span)) {
-      connection = wrappedDriver.connect(url, info);
-    } finally {
-      span.finish();
-    }
+    final String realUrl = url;
+    final Connection connection = JdbcTracingUtils.call("AcquireConnection", () -> 
+        wrappedDriver.connect(realUrl, info), null, connectionInfo, withActiveSpanOnly,
+        null, currentTracer);
 
     return WrapperProxy
         .wrap(connection, new TracingConnection(connection, connectionInfo, withActiveSpanOnly,
