@@ -170,7 +170,7 @@ public class TracingDriver implements Driver {
     final Driver wrappedDriver = findDriver(url);
 
     final Tracer currentTracer = getTracer();
-    final ConnectionInfo connectionInfo = URLParser.parser(url);
+    final ConnectionInfo connectionInfo = URLParser.parse(url);
     final Span span = buildSpan("AcquireConnection", "", connectionInfo, withActiveSpanOnly,
         Collections.<String>emptySet(), currentTracer);
     final Connection connection;
