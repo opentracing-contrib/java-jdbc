@@ -14,10 +14,6 @@
 package io.opentracing.contrib.jdbc;
 
 
-import static io.opentracing.contrib.jdbc.JdbcTracingUtils.buildSpan;
-
-import io.opentracing.Scope;
-import io.opentracing.Span;
 import io.opentracing.Tracer;
 import java.io.InputStream;
 import java.io.Reader;
@@ -56,30 +52,14 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
 
   @Override
   public ResultSet executeQuery() throws SQLException {
-    Span span = buildSpan("Query", query, connectionInfo, withActiveSpanOnly, ignoreStatements,
-        tracer);
-    try (Scope ignored = tracer.activateSpan(span)) {
-      return preparedStatement.executeQuery();
-    } catch (Exception e) {
-      JdbcTracingUtils.onError(e, span);
-      throw e;
-    } finally {
-      span.finish();
-    }
+    return JdbcTracingUtils.call("Query", preparedStatement::executeQuery, 
+        query, connectionInfo, withActiveSpanOnly, ignoreStatements, tracer);
   }
 
   @Override
   public int executeUpdate() throws SQLException {
-    Span span = buildSpan("Update", query, connectionInfo, withActiveSpanOnly, ignoreStatements,
-        tracer);
-    try (Scope ignored = tracer.activateSpan(span)) {
-      return preparedStatement.executeUpdate();
-    } catch (Exception e) {
-      JdbcTracingUtils.onError(e, span);
-      throw e;
-    } finally {
-      span.finish();
-    }
+    return JdbcTracingUtils.call("Update", preparedStatement::executeUpdate, 
+        query, connectionInfo, withActiveSpanOnly, ignoreStatements, tracer);
   }
 
   @Override
@@ -185,16 +165,8 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
 
   @Override
   public boolean execute() throws SQLException {
-    Span span = buildSpan("Execute", query, connectionInfo, withActiveSpanOnly,
-        ignoreStatements, tracer);
-    try (Scope ignored = tracer.activateSpan(span)) {
-      return preparedStatement.execute();
-    } catch (Exception e) {
-      JdbcTracingUtils.onError(e, span);
-      throw e;
-    } finally {
-      span.finish();
-    }
+    return JdbcTracingUtils.call("Execute", preparedStatement::execute, 
+        query, connectionInfo, withActiveSpanOnly, ignoreStatements, tracer);
   }
 
   @Override
