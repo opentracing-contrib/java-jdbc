@@ -62,6 +62,7 @@ class JdbcTracingUtils {
       Set<String> ignoreStatements,
       Tracer tracer) throws E {
     if (!TracingDriver.isTraceEnabled() || (withActiveSpanOnly && tracer.activeSpan() == null)) {
+      runnable.run();
       return;
     }
 
