@@ -160,6 +160,12 @@ public class OpenTracingConfig {
 
 
 
+## Slow Query
+Span is marked by tag `slow=true` if duration exceed `slowQueryThresholdMs`.
+`slowQueryThresholdMs` defaults to `0` which means disabled, can be enabled in two ways:
+1. Passing system property, E.g. `-Dio.opentracing.contrib.jdbc.slowQueryThresholdMs=100`
+2. Modified static field value by code, E.g. `io.opentracing.contrib.jdbc.JdbcTracingUtils.slowQueryThresholdMs=100`
+
 ## Troubleshooting
 In case of _Unable to find a driver_ error the database driver should be registered before configuring
 the datasource.
