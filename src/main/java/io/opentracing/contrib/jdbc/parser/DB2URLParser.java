@@ -26,7 +26,7 @@ public class DB2URLParser extends AbstractMatcherURLParser {
 
 
     private static final Pattern DB2_URL_PATTERN = Pattern
-        .compile("jdbc:db2:\\/\\/(?<host>[^:^\\/]+)(:(?<port>\\d+))?\\/(?<instance>[^\\?^:]+)(:(?<options>.*))?");
+        .compile("jdbc:db2:\\/\\/(?<host>[^:\\/]+)(:(?<port>\\d+))?\\/(?<instance>[^:]+)(:(?<options>.*))?");
 
     private static final String DB2_TYPE = "db2";
 
