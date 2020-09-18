@@ -26,7 +26,7 @@ import java.util.regex.Pattern;
 public class AS400URLParser extends AbstractMatcherURLParser {
 
     private static final Pattern AS400_URL_PATTERN = Pattern
-        .compile("jdbc:as400:\\/\\/(?<host>[^\\/^;]+)(\\/(?<instance>[^;^\\/]*))?\\/?(;(?<options>.*))?");
+        .compile("jdbc:as400:\\/\\/(?<host>[^\\/;]+)(\\/(?<instance>[^;\\/]*))?\\/?(;(?<options>.*))?");
 
     private static final String AS400_TYPE = "as400";
 
