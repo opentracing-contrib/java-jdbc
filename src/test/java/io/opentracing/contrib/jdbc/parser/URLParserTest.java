@@ -35,6 +35,14 @@ public class URLParserTest {
     assertEquals("test[mysql(primaryhost:3306)]", connectionInfo.getPeerService());
   }
 
+  public void testParseMysqlJDBCURLWithoutHost() {
+    ConnectionInfo connectionInfo = URLParser.parse("jdbc:mysql///test");
+    assertEquals(MYSQL, connectionInfo.getDbType());
+    assertEquals("test", connectionInfo.getDbInstance());
+    assertEquals("localhost:3306", connectionInfo.getDbPeer());
+    assertEquals("test[mysql(localhost:3306)]", connectionInfo.getPeerService());
+  }
+
   @Test
   public void testParseMysqlJDBCURLWithoutDB() {
     ConnectionInfo connectionInfo = URLParser.parse("jdbc:mysql//primaryhost?profileSQL=true");
