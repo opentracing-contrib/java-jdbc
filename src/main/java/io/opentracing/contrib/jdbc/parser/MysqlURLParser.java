@@ -17,6 +17,8 @@ import io.opentracing.contrib.jdbc.ConnectionInfo;
 
 public class MysqlURLParser extends AbstractURLParser {
 
+  private static final String DEFAULT_HOST = "localhost";
+
   private static final int DEFAULT_PORT = 3306;
 
   protected String dbType() {
@@ -72,6 +74,9 @@ public class MysqlURLParser extends AbstractURLParser {
   public ConnectionInfo parse(String url) {
     URLLocation location = fetchDatabaseHostsIndexRange(url);
     String hosts = url.substring(location.startIndex(), location.endIndex());
+    if (hosts.isEmpty()) {
+      hosts = DEFAULT_HOST;
+    }
     String[] hostSegment = hosts.split(",");
     if (hostSegment.length > 1) {
       StringBuilder sb = new StringBuilder();
