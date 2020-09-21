@@ -52,13 +52,19 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
 
   @Override
   public ResultSet executeQuery() throws SQLException {
-    return JdbcTracingUtils.call("Query", preparedStatement::executeQuery, 
+    return JdbcTracingUtils.call("Query", preparedStatement::executeQuery,
         query, connectionInfo, withActiveSpanOnly, ignoreStatements, tracer);
   }
 
   @Override
   public int executeUpdate() throws SQLException {
-    return JdbcTracingUtils.call("Update", preparedStatement::executeUpdate, 
+    return JdbcTracingUtils.call("Update", preparedStatement::executeUpdate,
+        query, connectionInfo, withActiveSpanOnly, ignoreStatements, tracer);
+  }
+
+  @Override
+  public boolean execute() throws SQLException {
+    return JdbcTracingUtils.call("Execute", preparedStatement::execute,
         query, connectionInfo, withActiveSpanOnly, ignoreStatements, tracer);
   }
 
@@ -161,12 +167,6 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
   @Override
   public void setObject(int parameterIndex, Object x) throws SQLException {
     preparedStatement.setObject(parameterIndex, x);
-  }
-
-  @Override
-  public boolean execute() throws SQLException {
-    return JdbcTracingUtils.call("Execute", preparedStatement::execute, 
-        query, connectionInfo, withActiveSpanOnly, ignoreStatements, tracer);
   }
 
   @Override
