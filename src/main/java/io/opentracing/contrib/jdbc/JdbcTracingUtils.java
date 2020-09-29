@@ -17,12 +17,13 @@ import io.opentracing.Scope;
 import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.noop.NoopSpan;
+import io.opentracing.tag.BooleanTag;
 import io.opentracing.tag.StringTag;
 import io.opentracing.tag.Tags;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
+import java.util.concurrent.TimeUnit;
 
 class JdbcTracingUtils {
 
@@ -32,6 +33,13 @@ class JdbcTracingUtils {
    * Opentracing standard tag https://github.com/opentracing/specification/blob/master/semantic_conventions.md
    */
   static final StringTag PEER_ADDRESS = new StringTag("peer.address");
+
+  static final BooleanTag SLOW = new BooleanTag("slow");
+
+  /**
+   * can be modified by application code
+   */
+  public static int slowQueryThresholdMs = Integer.getInteger("io.opentracing.contrib.jdbc.slowQueryThresholdMs", 0);
 
   static Span buildSpan(String operationName,
       String sql,
@@ -68,14 +76,18 @@ class JdbcTracingUtils {
 
     final Span span = buildSpan(operationName, sql, connectionInfo, withActiveSpanOnly,
     ignoreStatements, tracer);
-     try (Scope ignored = tracer.activateSpan(span)) {
+    long time = slowQueryThresholdMs  > 0 ? System.nanoTime() : 0;
+    try (Scope ignored = tracer.activateSpan(span)) {
        runnable.run();
-     } catch (Exception e) {
-       JdbcTracingUtils.onError(e, span);
-       throw e;
-     } finally {
-       span.finish();
-     }
+    } catch (Exception e) {
+      JdbcTracingUtils.onError(e, span);
+      throw e;
+    } finally {
+      if (slowQueryThresholdMs > 0 && System.nanoTime() - time > TimeUnit.MILLISECONDS.toNanos(slowQueryThresholdMs)) {
+        SLOW.set(span, true);
+      }
+      span.finish();
+    }
   }
 
   static <T, E extends Exception> T call(String operationName,
@@ -85,21 +97,25 @@ class JdbcTracingUtils {
   boolean withActiveSpanOnly,
   Set<String> ignoreStatements,
   Tracer tracer) throws E {
-if (!TracingDriver.isTraceEnabled() || (withActiveSpanOnly && tracer.activeSpan() == null)) {
-  return callable.call();
-}
+    if (!TracingDriver.isTraceEnabled() || (withActiveSpanOnly && tracer.activeSpan() == null)) {
+      return callable.call();
+    }
 
-final Span span = buildSpan(operationName, sql, connectionInfo, withActiveSpanOnly,
-ignoreStatements, tracer);
- try (Scope ignored = tracer.activateSpan(span)) {
-   return callable.call();
- } catch (Exception e) {
-   JdbcTracingUtils.onError(e, span);
-   throw e;
- } finally {
-   span.finish();
- }
-}
+    final Span span = buildSpan(operationName, sql, connectionInfo, withActiveSpanOnly,
+        ignoreStatements, tracer);
+    long time = slowQueryThresholdMs  > 0 ? System.nanoTime() : 0;
+    try (Scope ignored = tracer.activateSpan(span)) {
+      return callable.call();
+    } catch (Exception e) {
+      JdbcTracingUtils.onError(e, span);
+      throw e;
+    } finally {
+      if (slowQueryThresholdMs > 0 && System.nanoTime() - time > TimeUnit.MILLISECONDS.toNanos(slowQueryThresholdMs)) {
+        SLOW.set(span, true);
+      }
+      span.finish();
+    }
+  }
 
   private static boolean isNotEmpty(CharSequence s) {
     return s != null && !"".contentEquals(s);
