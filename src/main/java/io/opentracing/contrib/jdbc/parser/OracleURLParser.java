@@ -25,7 +25,7 @@ public class OracleURLParser implements ConnectionURLParser {
   public static final String PREFIX_OCI = "jdbc:oracle:oci:";
   public static final int DEFAULT_PORT = 1521;
   private static Pattern EASY_CONNECT_PATTERN = Pattern.compile(
-      "(?<username>.*)@(//)?(?<host>[^:/]+)(?<port>:[0-9]+)?(?<service>[:/][^:/]+)?(?<server>:[^:/]+)?(?<instance>/[^:/]+)?");
+      "(?<username>.*)@(?<ldap>ldap:)?(//)?(?<host>[^:/]+)(?<port>:[0-9]+)?(?<service>[:/][^:/]+)?(?<server>:[^:/]+)?(?<instance>/[^:/]+)?");
 
   @Override
   public ConnectionInfo parse(final String url) {

@@ -161,6 +161,16 @@ public class URLParserTest {
   }
 
   @Test
+  public void testParseOracleJDBCURLWithLDAP() {
+    ConnectionInfo connectionInfo = URLParser
+            .parse("jdbc:oracle:thin:@ldap://oid:5000/mydb1,cn=OracleContext,dc=myco,dc=com");
+    assertEquals(ORACLE, connectionInfo.getDbType());
+    assertEquals("mydb1,cn=OracleContext,dc=myco,dc=com", connectionInfo.getDbInstance());
+    assertEquals("oid:5000", connectionInfo.getDbPeer());
+    assertEquals("mydb1,cn=OracleContext,dc=myco,dc=com[oracle(oid:5000)]", connectionInfo.getPeerService());
+  }
+
+  @Test
   public void testParseH2JDBCURLWithEmbedded() {
     ConnectionInfo connectionInfo = URLParser.parse("jdbc:h2:file:/data/sample");
     assertEquals(H2, connectionInfo.getDbType());
