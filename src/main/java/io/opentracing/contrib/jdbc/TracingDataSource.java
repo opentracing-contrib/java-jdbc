@@ -57,11 +57,7 @@ public class TracingDataSource implements DataSource, AutoCloseable {
         try {
           method = underlying.getClass().getMethod("getJdbcUrl");
         } catch (NoSuchMethodException e) {
-          try {
             method = underlying.getClass().getMethod("getUrl");
-          } catch (NoSuchMethodException nsme) {
-            method = null;
-          }
         }
         info = URLParser.parse((String) method.invoke(underlying));
       } catch (Exception ignored) {
