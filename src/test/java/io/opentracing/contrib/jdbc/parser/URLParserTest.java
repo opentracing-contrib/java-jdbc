@@ -260,6 +260,16 @@ public class URLParserTest {
   }
 
   @Test
+  public void testParsePostgresqlJDBCURLWithSSLCertPath() {
+    ConnectionInfo connectionInfo = URLParser
+        .parse("jdbc:postgresql//primaryhost:3307/test?sslmode=verify-full&sslrootcert=/some/path.pem");
+    assertEquals(POSTGRESQL, connectionInfo.getDbType());
+    assertEquals("test", connectionInfo.getDbInstance());
+    assertEquals("primaryhost:3307", connectionInfo.getDbPeer());
+    assertEquals("test[postgresql(primaryhost:3307)]", connectionInfo.getPeerService());
+  }
+
+  @Test
   public void testParsePostgresqlJDBCURLWithMultiHost() {
     ConnectionInfo connectionInfo = URLParser.parse(
         "jdbc:postgresql//primaryhost:3307,secondaryhost1,secondaryhost2/test?profileSQL=true");
