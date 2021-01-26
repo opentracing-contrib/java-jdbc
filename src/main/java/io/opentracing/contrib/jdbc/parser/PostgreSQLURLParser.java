@@ -31,7 +31,9 @@ public class PostgreSQLURLParser extends AbstractURLParser {
 
   @Override
   protected URLLocation fetchDatabaseNameIndexRange(String url) {
-    int databaseStartTag = url.lastIndexOf("/");
+    int hostLabelStartIndex = url.indexOf("//");
+    int hostLabelEndIndex = url.indexOf("/", hostLabelStartIndex + 2);
+    int databaseStartTag = url.indexOf("/", hostLabelEndIndex);
     int databaseEndTag = url.indexOf("?", databaseStartTag);
     if (databaseEndTag == -1) {
       databaseEndTag = url.length();
