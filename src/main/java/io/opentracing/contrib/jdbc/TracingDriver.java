@@ -91,19 +91,17 @@ public class TracingDriver implements Driver {
     }
   }
 
-  private static boolean traceEnabled = true;
-
   /**
    * Sets the {@code traceEnabled} property to enable or disable traces.
    *
    * @param traceEnabled The {@code traceEnabled} value.
    */
   public static void setTraceEnabled(boolean traceEnabled) {
-    TracingDriver.traceEnabled = traceEnabled;
+    JdbcTracing.setTraceEnabled(traceEnabled);
   }
 
   public static boolean isTraceEnabled() {
-    return TracingDriver.traceEnabled;
+    return JdbcTracing.isTraceEnabled();
   }
 
   private static boolean interceptorMode = false;

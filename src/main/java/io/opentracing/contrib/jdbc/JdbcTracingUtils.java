@@ -47,7 +47,7 @@ class JdbcTracingUtils {
       boolean withActiveSpanOnly,
       Set<String> ignoreStatements,
       Tracer tracer) {
-    if (!TracingDriver.isTraceEnabled() || (withActiveSpanOnly && tracer.activeSpan() == null)) {
+    if (!JdbcTracing.isTraceEnabled() || (withActiveSpanOnly && tracer.activeSpan() == null)) {
       return NoopSpan.INSTANCE;
     } else if (ignoreStatements != null && ignoreStatements.contains(sql)) {
       return NoopSpan.INSTANCE;
@@ -69,7 +69,7 @@ class JdbcTracingUtils {
       boolean withActiveSpanOnly,
       Set<String> ignoreStatements,
       Tracer tracer) throws E {
-    if (!TracingDriver.isTraceEnabled() || (withActiveSpanOnly && tracer.activeSpan() == null)) {
+    if (!JdbcTracing.isTraceEnabled() || (withActiveSpanOnly && tracer.activeSpan() == null)) {
       runnable.run();
       return;
     }
@@ -97,7 +97,7 @@ class JdbcTracingUtils {
   boolean withActiveSpanOnly,
   Set<String> ignoreStatements,
   Tracer tracer) throws E {
-    if (!TracingDriver.isTraceEnabled() || (withActiveSpanOnly && tracer.activeSpan() == null)) {
+    if (!JdbcTracing.isTraceEnabled() || (withActiveSpanOnly && tracer.activeSpan() == null)) {
       return callable.call();
     }
 
