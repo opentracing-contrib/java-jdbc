@@ -28,4 +28,18 @@ public class JdbcTracing {
   public static boolean isTraceEnabled() {
     return JdbcTracing.traceEnabled;
   }
+
+  /**
+   * can be modified by application code
+   */
+  private static int slowQueryThresholdMs = Integer.getInteger("io.opentracing.contrib.jdbc.slowQueryThresholdMs", 0);
+
+  public static int getSlowQueryThresholdMs() {
+    return slowQueryThresholdMs;
+  }
+
+  public static void setSlowQueryThresholdMs(final int slowQueryThresholdMs) {
+    JdbcTracing.slowQueryThresholdMs = slowQueryThresholdMs;
+  }
+
 }

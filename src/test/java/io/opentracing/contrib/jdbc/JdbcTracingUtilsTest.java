@@ -23,6 +23,7 @@ import io.opentracing.util.GlobalTracerTestUtil;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
+import java.util.Collections;
 import java.util.List;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -41,11 +42,13 @@ public class JdbcTracingUtilsTest {
   @Before
   public void before() {
     mockTracer.reset();
+    JdbcTracing.setSlowQueryThresholdMs(0);
   }
 
   @AfterClass
   public static void afterClass() {
     TracingDriver.setTraceEnabled(true);
+    JdbcTracing.setSlowQueryThresholdMs(0);
   }
 
   @Test
@@ -72,5 +75,25 @@ public class JdbcTracingUtilsTest {
     }
 
     assertTrue(mockTracer.finishedSpans().isEmpty());
+  }
+
+  @Test
+  public void setSlowTagCorrectly() throws Exception {
+    final int slowQueryThresholdMs = 100;
+    JdbcTracing.setSlowQueryThresholdMs(slowQueryThresholdMs);
+
+    JdbcTracingUtils.execute(
+        "SlowQuery",
+        () -> Thread.sleep(slowQueryThresholdMs * 2),
+        null,
+        ConnectionInfo.UNKNOWN_CONNECTION_INFO,
+        false,
+        Collections.emptySet(),
+        mockTracer);
+
+    final List<MockSpan> finishedSpans = mockTracer.finishedSpans();
+    assertEquals("Should have traced a query execution", 1, finishedSpans.size());
+    final MockSpan slowQuerySpan = finishedSpans.get(0);
+    assertTrue("Span should be tagged slow", slowQuerySpan.tags().containsKey(JdbcTracingUtils.SLOW.getKey()));
   }
 }
