@@ -36,11 +36,6 @@ class JdbcTracingUtils {
 
   static final BooleanTag SLOW = new BooleanTag("slow");
 
-  /**
-   * can be modified by application code
-   */
-  public static int slowQueryThresholdMs = Integer.getInteger("io.opentracing.contrib.jdbc.slowQueryThresholdMs", 0);
-
   static Span buildSpan(String operationName,
       String sql,
       ConnectionInfo connectionInfo,
@@ -76,14 +71,14 @@ class JdbcTracingUtils {
 
     final Span span = buildSpan(operationName, sql, connectionInfo, withActiveSpanOnly,
     ignoreStatements, tracer);
-    long time = slowQueryThresholdMs  > 0 ? System.nanoTime() : 0;
+    long time = JdbcTracing.getSlowQueryThresholdMs()  > 0 ? System.nanoTime() : 0;
     try (Scope ignored = tracer.activateSpan(span)) {
        runnable.run();
     } catch (Exception e) {
       JdbcTracingUtils.onError(e, span);
       throw e;
     } finally {
-      if (slowQueryThresholdMs > 0 && System.nanoTime() - time > TimeUnit.MILLISECONDS.toNanos(slowQueryThresholdMs)) {
+      if (JdbcTracing.getSlowQueryThresholdMs() > 0 && System.nanoTime() - time > TimeUnit.MILLISECONDS.toNanos(JdbcTracing.getSlowQueryThresholdMs())) {
         SLOW.set(span, true);
       }
       span.finish();
@@ -103,14 +98,14 @@ class JdbcTracingUtils {
 
     final Span span = buildSpan(operationName, sql, connectionInfo, withActiveSpanOnly,
         ignoreStatements, tracer);
-    long time = slowQueryThresholdMs  > 0 ? System.nanoTime() : 0;
+    long time = JdbcTracing.getSlowQueryThresholdMs()  > 0 ? System.nanoTime() : 0;
     try (Scope ignored = tracer.activateSpan(span)) {
       return callable.call();
     } catch (Exception e) {
       JdbcTracingUtils.onError(e, span);
       throw e;
     } finally {
-      if (slowQueryThresholdMs > 0 && System.nanoTime() - time > TimeUnit.MILLISECONDS.toNanos(slowQueryThresholdMs)) {
+      if (JdbcTracing.getSlowQueryThresholdMs() > 0 && System.nanoTime() - time > TimeUnit.MILLISECONDS.toNanos(JdbcTracing.getSlowQueryThresholdMs())) {
         SLOW.set(span, true);
       }
       span.finish();
