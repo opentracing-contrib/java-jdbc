@@ -166,6 +166,12 @@ Span is marked by tag `slow=true` if duration exceed `slowQueryThresholdMs`.
 1. Passing system property, E.g. `-Dio.opentracing.contrib.jdbc.slowQueryThresholdMs=100`
 2. Modify value by code, E.g. `io.opentracing.contrib.jdbc.JdbcTracing.setSlowQueryThresholdMs(100)`
 
+## Fast Query
+Spans that complete faster than the optional `excludeFastQueryThresholdMs` flag will be not be reported.
+`excludeFastQueryThresholdMs` defaults to `0` which means disabled, can be enabled in two ways:
+1. Passing system property, E.g. `-Dio.opentracing.contrib.jdbc.excludeFastQueryThresholdMs=100`
+2. Modify value by code, E.g. `io.opentracing.contrib.jdbc.JdbcTracing.setExcludeFastQueryThresholdMs(100)`
+
 ## Troubleshooting
 In case of _Unable to find a driver_ error the database driver should be registered before configuring
 the datasource.
