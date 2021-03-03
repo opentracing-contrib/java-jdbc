@@ -42,4 +42,14 @@ public class JdbcTracing {
     JdbcTracing.slowQueryThresholdMs = slowQueryThresholdMs;
   }
 
+  private static int excludeFastQueryThresholdMs = Integer.getInteger("io.opentracing.contrib.jdbc.excludeFastQueryThresholdMs", 0);
+
+  public static int getExcludeFastQueryThresholdMs() {
+    return excludeFastQueryThresholdMs;
+  }
+
+  public static void setExcludeFastQueryThresholdMs(final int excludeFastQueryThresholdMs) {
+    JdbcTracing.excludeFastQueryThresholdMs = excludeFastQueryThresholdMs;
+  }
+
 }

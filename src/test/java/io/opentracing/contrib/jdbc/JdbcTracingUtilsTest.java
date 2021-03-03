@@ -96,4 +96,24 @@ public class JdbcTracingUtilsTest {
     final MockSpan slowQuerySpan = finishedSpans.get(0);
     assertTrue("Span should be tagged slow", slowQuerySpan.tags().containsKey(JdbcTracingUtils.SLOW.getKey()));
   }
+
+  @Test
+  public void setExcludeFastTagCorrectly() throws Exception {
+    final int excludeFastQueryThresholdMs = 100;
+    JdbcTracing.setExcludeFastQueryThresholdMs(excludeFastQueryThresholdMs);
+
+    JdbcTracingUtils.execute(
+        "FastQuery",
+        () -> Thread.sleep(excludeFastQueryThresholdMs / 2),
+        null,
+        ConnectionInfo.UNKNOWN_CONNECTION_INFO,
+        false,
+        Collections.emptySet(),
+        mockTracer);
+
+    final List<MockSpan> finishedSpans = mockTracer.finishedSpans();
+    assertEquals("Should have traced a query execution", 1, finishedSpans.size());
+    final MockSpan fastQuerySpan = finishedSpans.get(0);
+    assertTrue("Span should be tagged with peer.sampling=0", fastQuerySpan.tags().containsKey(JdbcTracingUtils.PEER_SAMPLING.getKey()));
+  }
 }
