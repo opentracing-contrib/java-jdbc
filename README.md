@@ -1,11 +1,13 @@
 [![Build Status][ci-img]][ci] [![Coverage Status][cov-img]][cov] [![Released Version][maven-img]][maven] [![Apache-2.0 license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 # OpenTracing JDBC Instrumentation
+
 OpenTracing instrumentation for JDBC.
 
 ## Installation
 
 pom.xml
+
 ```xml
 <dependency>
     <groupId>io.opentracing.contrib</groupId>
@@ -28,7 +30,8 @@ pom.xml
 
    _jdbc:**tracing**:h2:mem:test?**traceWithActiveSpanOnly=true**_
 
-   To ignore specific queries (such as health checks), use the property `ignoreForTracing="SELECT 1"`. Double quotes can be escaped with `\`.
+   To ignore specific queries (such as health checks), use the
+   property `ignoreForTracing="SELECT 1"`. Double quotes can be escaped with `\`.
 
    `SELECT * FROM \"TEST\"`<br><sup>The property can be repeated for multiple statements.</sup>
 
@@ -59,7 +62,10 @@ pom.xml
 
 > Tracing for all JDBC connections without modifying the URL.
 
-In "interceptor mode", the `TracingDriver` will intercept calls to `DriverManager.getConnection(url,...)` for all URLs. The `TracingDriver` provides connections to the `DriverManager` that are instrumented. Please note that the `TracingDriver` must be registered before the underlying driver, It's recommended to turn on "interceptor mode" in the first place. 
+In "interceptor mode", the `TracingDriver` will intercept calls
+to `DriverManager.getConnection(url,...)` for all URLs. The `TracingDriver` provides connections to
+the `DriverManager` that are instrumented. Please note that the `TracingDriver` must be registered
+before the underlying driver, It's recommended to turn on "interceptor mode" in the first place.
 
 For standalone applications:
 
@@ -70,6 +76,7 @@ public static void main(String[] args) {
 }
 
 ```
+
 For web applications:
 
 ```java
@@ -78,9 +85,12 @@ public void contextInitialized(ServletContextEvent event) {
 }
 ```
 
-Or call `TracingDriver.ensureRegisteredAsTheFirstDriver()` along with `TracingDriver.setInterceptorMode(true)` at any place, Please note driver like Oracle JDBC may fail since it's destroyed forever after deregistration.
+Or call `TracingDriver.ensureRegisteredAsTheFirstDriver()` along
+with `TracingDriver.setInterceptorMode(true)` at any place, Please note driver like Oracle JDBC may
+fail since it's destroyed forever after deregistration.
 
-The `withActiveSpanOnly` and `ignoreStatements` properties for "interceptor mode" can be configured with the `TracingDriver` via:
+The `withActiveSpanOnly` and `ignoreStatements` properties for "interceptor mode" can be configured
+with the `TracingDriver` via:
 
 ```java
 // Set withActiveSpanOnly=true
@@ -144,11 +154,14 @@ spring.datasource.hikari.driverClassName=io.opentracing.contrib.jdbc.TracingDriv
 spring.datasource.hikari.jdbcUrl=jdbc:tracing:postgresql://localhost:5432/my_app_db
 
 ```
+
 Configuration Bean:
+
 ```java
+
 @Component
 public class OpenTracingConfig {
-  
+
   @Bean
   public io.opentracing.Tracer jaegerTracer() {
     io.opentracing.contrib.jdbc.TracingDriver.load();
@@ -158,32 +171,41 @@ public class OpenTracingConfig {
 
 ```
 
-
-
 ## Slow Query
+
 Span is marked by tag `slow=true` if duration exceed `slowQueryThresholdMs`.
 `slowQueryThresholdMs` defaults to `0` which means disabled, can be enabled in two ways:
+
 1. Passing system property, E.g. `-Dio.opentracing.contrib.jdbc.slowQueryThresholdMs=100`
 2. Modify value by code, E.g. `io.opentracing.contrib.jdbc.JdbcTracing.setSlowQueryThresholdMs(100)`
 
 ## Fast Query
-Spans that complete faster than the optional `excludeFastQueryThresholdMs` flag will be not be reported.
+
+Spans that complete faster than the optional `excludeFastQueryThresholdMs` flag will be not be
+reported.
 `excludeFastQueryThresholdMs` defaults to `0` which means disabled, can be enabled in two ways:
+
 1. Passing system property, E.g. `-Dio.opentracing.contrib.jdbc.excludeFastQueryThresholdMs=100`
-2. Modify value by code, E.g. `io.opentracing.contrib.jdbc.JdbcTracing.setExcludeFastQueryThresholdMs(100)`
+2. Modify value by code,
+   E.g. `io.opentracing.contrib.jdbc.JdbcTracing.setExcludeFastQueryThresholdMs(100)`
 
 ## Troubleshooting
-In case of _Unable to find a driver_ error the database driver should be registered before configuring
-the datasource.
-E.g. `Class.forName("com.mysql.jdbc.Driver");`
+
+In case of _Unable to find a driver_ error the database driver should be registered before
+configuring the datasource. E.g. `Class.forName("com.mysql.jdbc.Driver");`
 
 ## License
 
 [Apache 2.0 License](./LICENSE).
 
 [ci-img]: https://travis-ci.org/opentracing-contrib/java-jdbc.svg?branch=master
+
 [ci]: https://travis-ci.org/opentracing-contrib/java-jdbc
+
 [cov-img]: https://coveralls.io/repos/github/opentracing-contrib/java-jdbc/badge.svg?branch=master
+
 [cov]: https://coveralls.io/github/opentracing-contrib/java-jdbc?branch=master
+
 [maven-img]: https://img.shields.io/maven-central/v/io.opentracing.contrib/opentracing-jdbc.svg
+
 [maven]: http://search.maven.org/#search%7Cga%7C1%7Cio.opentracing.contrib%20opentracing-jdbc

@@ -38,7 +38,8 @@ class OracleURLParserTest {
             "XEPDB1"), //
         Arguments.of("jdbc:oracle:oci:@//localhost:1234/XEPDB1:server/instance", "localhost:1234",
             "XEPDB1"), //
-        Arguments.of("jdbc:oracle:thin:@ldap://localhost:1234/XEPDB1,cn=OracleContext,dc=myco,dc=com",
+        Arguments
+            .of("jdbc:oracle:thin:@ldap://localhost:1234/XEPDB1,cn=OracleContext,dc=myco,dc=com",
                 "localhost:1234", "XEPDB1,cn=OracleContext,dc=myco,dc=com") //
     );
   }
@@ -65,7 +66,8 @@ class OracleURLParserTest {
         Arguments.of("jdbc:oracle:thin:scott/tiger@myhost:1521:orcl", "myhost:1521", "orcl"), //
         Arguments.of("jdbc:oracle:thin:@orcl", "orcl:1521", "orcl"), //
         Arguments.of("jdbc:oracle:oci:@orcl", "orcl:1521", "orcl"), //
-        Arguments.of("jdbc:oracle:thin:@ldap://localhost/orcl,cn=OracleContext,dc=myco,dc=com", "localhost:1521", "orcl,cn=OracleContext,dc=myco,dc=com") //
+        Arguments.of("jdbc:oracle:thin:@ldap://localhost/orcl,cn=OracleContext,dc=myco,dc=com",
+            "localhost:1521", "orcl,cn=OracleContext,dc=myco,dc=com") //
     );
   }
 

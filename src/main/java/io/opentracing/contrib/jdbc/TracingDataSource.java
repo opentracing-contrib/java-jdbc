@@ -57,7 +57,7 @@ public class TracingDataSource implements DataSource, AutoCloseable {
         try {
           method = underlying.getClass().getMethod("getJdbcUrl");
         } catch (NoSuchMethodException e) {
-            method = underlying.getClass().getMethod("getUrl");
+          method = underlying.getClass().getMethod("getUrl");
         }
         info = URLParser.parse((String) method.invoke(underlying));
       } catch (Exception ignored) {
@@ -75,8 +75,9 @@ public class TracingDataSource implements DataSource, AutoCloseable {
 
   @Override
   public Connection getConnection() throws SQLException {
-    final Connection connection = JdbcTracingUtils.call("AcquireConnection", underlying::getConnection,
-        null, connectionInfo, withActiveSpanOnly, null, tracer);
+    final Connection connection = JdbcTracingUtils
+        .call("AcquireConnection", underlying::getConnection,
+            null, connectionInfo, withActiveSpanOnly, null, tracer);
 
     return WrapperProxy
         .wrap(connection, new TracingConnection(connection, connectionInfo, withActiveSpanOnly,
@@ -86,8 +87,8 @@ public class TracingDataSource implements DataSource, AutoCloseable {
   @Override
   public Connection getConnection(final String username, final String password)
       throws SQLException {
-    final Connection connection = JdbcTracingUtils.call("AcquireConnection", () -> 
-        underlying.getConnection(username, password), null, connectionInfo,
+    final Connection connection = JdbcTracingUtils.call("AcquireConnection", () ->
+            underlying.getConnection(username, password), null, connectionInfo,
         withActiveSpanOnly, null, tracer);
 
     return WrapperProxy

@@ -18,8 +18,8 @@ import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.noop.NoopSpan;
 import io.opentracing.tag.BooleanTag;
-import io.opentracing.tag.StringTag;
 import io.opentracing.tag.IntTag;
+import io.opentracing.tag.StringTag;
 import io.opentracing.tag.Tags;
 import java.util.HashMap;
 import java.util.Map;
@@ -72,10 +72,11 @@ class JdbcTracingUtils {
     }
 
     final Span span = buildSpan(operationName, sql, connectionInfo, withActiveSpanOnly,
-    ignoreStatements, tracer);
-    long startTime = (JdbcTracing.getSlowQueryThresholdMs()  > 0 || JdbcTracing.getExcludeFastQueryThresholdMs() > 0) ? System.nanoTime() : 0;
+        ignoreStatements, tracer);
+    long startTime = (JdbcTracing.getSlowQueryThresholdMs() > 0
+        || JdbcTracing.getExcludeFastQueryThresholdMs() > 0) ? System.nanoTime() : 0;
     try (Scope ignored = tracer.activateSpan(span)) {
-       runnable.run();
+      runnable.run();
     } catch (Exception e) {
       JdbcTracingUtils.onError(e, span);
       throw e;
@@ -86,19 +87,19 @@ class JdbcTracingUtils {
   }
 
   static <T, E extends Exception> T call(String operationName,
-  CheckedCallable<T, E> callable,
-  String sql,
-  ConnectionInfo connectionInfo,
-  boolean withActiveSpanOnly,
-  Set<String> ignoreStatements,
-  Tracer tracer) throws E {
+      CheckedCallable<T, E> callable,
+      String sql,
+      ConnectionInfo connectionInfo,
+      boolean withActiveSpanOnly,
+      Set<String> ignoreStatements,
+      Tracer tracer) throws E {
     if (!JdbcTracing.isTraceEnabled() || (withActiveSpanOnly && tracer.activeSpan() == null)) {
       return callable.call();
     }
 
     final Span span = buildSpan(operationName, sql, connectionInfo, withActiveSpanOnly,
         ignoreStatements, tracer);
-    long startTime = JdbcTracing.getSlowQueryThresholdMs()  > 0 ? System.nanoTime() : 0;
+    long startTime = JdbcTracing.getSlowQueryThresholdMs() > 0 ? System.nanoTime() : 0;
     try (Scope ignored = tracer.activateSpan(span)) {
       return callable.call();
     } catch (Exception e) {
@@ -155,12 +156,14 @@ class JdbcTracingUtils {
     return errorLogs;
   }
 
-  private static void queryThresholdChecks(Span span, long startTime){
+  private static void queryThresholdChecks(Span span, long startTime) {
     long completionTime = System.nanoTime() - startTime;
-    if (JdbcTracing.getExcludeFastQueryThresholdMs() > 0 && completionTime < TimeUnit.MILLISECONDS.toNanos(JdbcTracing.getExcludeFastQueryThresholdMs())) {
+    if (JdbcTracing.getExcludeFastQueryThresholdMs() > 0 && completionTime < TimeUnit.MILLISECONDS
+        .toNanos(JdbcTracing.getExcludeFastQueryThresholdMs())) {
       PEER_SAMPLING.set(span, 0);
     }
-    if (JdbcTracing.getSlowQueryThresholdMs() > 0 && completionTime > TimeUnit.MILLISECONDS.toNanos(JdbcTracing.getSlowQueryThresholdMs())) {
+    if (JdbcTracing.getSlowQueryThresholdMs() > 0 && completionTime > TimeUnit.MILLISECONDS
+        .toNanos(JdbcTracing.getSlowQueryThresholdMs())) {
       SLOW.set(span, true);
     }
   }

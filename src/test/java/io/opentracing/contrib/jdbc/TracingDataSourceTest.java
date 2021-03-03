@@ -31,7 +31,8 @@ public class TracingDataSourceTest {
   public void traces_acquiring_connection() throws Exception {
     final BasicDataSource dataSource = getDataSource();
     final MockTracer mockTracer = new MockTracer();
-    try (final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer, dataSource)) {
+    try (final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer,
+        dataSource)) {
       try (final Connection connection = tracingDataSource.getConnection()) {
         assertFalse(mockTracer.finishedSpans().isEmpty());
       }
@@ -42,7 +43,8 @@ public class TracingDataSourceTest {
   public void sets_error() throws Exception {
     final BasicDataSource dataSource = getErroneousDataSource();
     final MockTracer mockTracer = new MockTracer();
-    try (final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer, dataSource)) {
+    try (final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer,
+        dataSource)) {
       try (final Connection connection = tracingDataSource.getConnection()) {
         assertNull("Get connection", connection);
       } catch (SQLException ignored) {
@@ -58,7 +60,8 @@ public class TracingDataSourceTest {
   public void rethrows_any_error() throws Exception {
     final BasicDataSource dataSource = getErroneousDataSource();
     final MockTracer mockTracer = new MockTracer();
-    try (final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer, dataSource)) {
+    try (final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer,
+        dataSource)) {
       tracingDataSource.getConnection();
     }
   }
@@ -67,12 +70,14 @@ public class TracingDataSourceTest {
   public void detect_connection_info() throws Exception {
     final BasicDataSource dataSource = getDataSource();
     final MockTracer mockTracer = new MockTracer();
-    try (final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer, dataSource)) {
+    try (final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer,
+        dataSource)) {
       tracingDataSource.getConnection();
     }
     assertFalse(mockTracer.finishedSpans().isEmpty());
     MockSpan finishedSpan = mockTracer.finishedSpans().get(0);
-    assertEquals("Span contains tag db.type=h2", "h2", finishedSpan.tags().get(Tags.DB_TYPE.getKey()));
+    assertEquals("Span contains tag db.type=h2", "h2",
+        finishedSpan.tags().get(Tags.DB_TYPE.getKey()));
   }
 
   private static BasicDataSource getDataSource() {

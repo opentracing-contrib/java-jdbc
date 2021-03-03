@@ -32,7 +32,8 @@ public class JdbcTracing {
   /**
    * can be modified by application code
    */
-  private static int slowQueryThresholdMs = Integer.getInteger("io.opentracing.contrib.jdbc.slowQueryThresholdMs", 0);
+  private static int slowQueryThresholdMs = Integer
+      .getInteger("io.opentracing.contrib.jdbc.slowQueryThresholdMs", 0);
 
   public static int getSlowQueryThresholdMs() {
     return slowQueryThresholdMs;
@@ -42,7 +43,8 @@ public class JdbcTracing {
     JdbcTracing.slowQueryThresholdMs = slowQueryThresholdMs;
   }
 
-  private static int excludeFastQueryThresholdMs = Integer.getInteger("io.opentracing.contrib.jdbc.excludeFastQueryThresholdMs", 0);
+  private static int excludeFastQueryThresholdMs = Integer
+      .getInteger("io.opentracing.contrib.jdbc.excludeFastQueryThresholdMs", 0);
 
   public static int getExcludeFastQueryThresholdMs() {
     return excludeFastQueryThresholdMs;
