@@ -115,7 +115,7 @@ public class JdbcTracingUtilsTest {
     final List<MockSpan> finishedSpans = mockTracer.finishedSpans();
     assertEquals("Should have traced a query execution", 1, finishedSpans.size());
     final MockSpan fastQuerySpan = finishedSpans.get(0);
-    assertTrue("Span should be tagged with peer.sampling=0",
-        fastQuerySpan.tags().containsKey(JdbcTracingUtils.PEER_SAMPLING.getKey()));
+    assertTrue("Span should be tagged with sampling.priority=0",
+        fastQuerySpan.tags().containsKey(JdbcTracingUtils.SAMPLING_PRIORITY.getKey()));
   }
 }
