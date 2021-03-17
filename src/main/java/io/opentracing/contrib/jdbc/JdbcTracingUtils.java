@@ -36,7 +36,7 @@ class JdbcTracingUtils {
   static final StringTag PEER_ADDRESS = new StringTag("peer.address");
 
   static final BooleanTag SLOW = new BooleanTag("slow");
-  static final IntTag PEER_SAMPLING = new IntTag("peer.sampling");
+  static final IntTag SAMPLING_PRIORITY = new IntTag("sampling.priority");
 
   static Span buildSpan(String operationName,
       String sql,
@@ -160,7 +160,7 @@ class JdbcTracingUtils {
     long completionTime = System.nanoTime() - startTime;
     if (JdbcTracing.getExcludeFastQueryThresholdMs() > 0 && completionTime < TimeUnit.MILLISECONDS
         .toNanos(JdbcTracing.getExcludeFastQueryThresholdMs())) {
-      PEER_SAMPLING.set(span, 0);
+      SAMPLING_PRIORITY.set(span, 0);
     }
     if (JdbcTracing.getSlowQueryThresholdMs() > 0 && completionTime > TimeUnit.MILLISECONDS
         .toNanos(JdbcTracing.getSlowQueryThresholdMs())) {
