@@ -13,13 +13,14 @@
  */
 package io.opentracing.contrib.jdbc.parser;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import java.util.stream.Stream;
 
 import io.opentracing.contrib.jdbc.ConnectionInfo;
-import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class OracleURLParserTest {
   private static final String ORACLE = "oracle";
@@ -47,6 +48,9 @@ class OracleURLParserTest {
   private static Stream<Arguments> tnsNameUrls() {
     return Stream.of( //
         Arguments
+            .of("jdbc:Oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST= localhost )(PORT= 1521))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=orcl)))",
+                "localhost:1521", "orcl"), //
+        Arguments
             .of("jdbc:oracle:thin:@(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST= localhost )(PORT= 1521))(CONNECT_DATA=(SERVER=DEDICATED)(SERVICE_NAME=orcl)))",
                 "localhost:1521", "orcl"), //
         Arguments
@@ -60,13 +64,17 @@ class OracleURLParserTest {
 
   private static Stream<Arguments> otherUrls() {
     return Stream.of( //
+        Arguments.of("jdbc:Oracle:thin:@localhost:orcl", "localhost:1521", "orcl"), //
         Arguments.of("jdbc:oracle:thin:@localhost:orcl", "localhost:1521", "orcl"), //
         Arguments.of("jdbc:oracle:thin:@localhost:1522:orcl", "localhost:1522", "orcl"), //
         Arguments.of("jdbc:oracle:thin:@//localhost:1521/orcl", "localhost:1521", "orcl"), //
         Arguments.of("jdbc:oracle:thin:scott/tiger@myhost:1521:orcl", "myhost:1521", "orcl"), //
         Arguments.of("jdbc:oracle:thin:@orcl", "orcl:1521", "orcl"), //
         Arguments.of("jdbc:oracle:oci:@orcl", "orcl:1521", "orcl"), //
+        Arguments.of("jdbc:Oracle:oci:@orcl", "orcl:1521", "orcl"), //
         Arguments.of("jdbc:oracle:thin:@ldap://localhost/orcl,cn=OracleContext,dc=myco,dc=com",
+            "localhost:1521", "orcl,cn=OracleContext,dc=myco,dc=com"), //
+        Arguments.of("jdbc:Oracle:thin:@ldap://localhost/orcl,cn=OracleContext,dc=myco,dc=com",
             "localhost:1521", "orcl,cn=OracleContext,dc=myco,dc=com") //
     );
   }
@@ -93,6 +101,7 @@ class OracleURLParserTest {
   @MethodSource("otherUrls")
   void parseOther(final String url, final String dbPeer, final String dbInstance) {
     final ConnectionInfo result = testee.parse(url);
+    assertThat(result).isNotNull();
     assertThat(result.getDbType()).isEqualTo(ORACLE);
     assertThat(result.getDbPeer()).isEqualTo(dbPeer);
     assertThat(result.getDbInstance()).isEqualTo(dbInstance);
