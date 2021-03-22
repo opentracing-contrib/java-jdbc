@@ -13,11 +13,12 @@
  */
 package io.opentracing.contrib.jdbc.parser;
 
-import io.opentracing.contrib.jdbc.ConnectionInfo;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import io.opentracing.contrib.jdbc.ConnectionInfo;
 
 public class OracleURLParser implements ConnectionURLParser {
   public static final String DB_TYPE = "oracle";
@@ -29,22 +30,25 @@ public class OracleURLParser implements ConnectionURLParser {
 
   @Override
   public ConnectionInfo parse(final String url) {
-    if (url != null && (url.startsWith(PREFIX_THIN) || url.startsWith(PREFIX_OCI))) {
-      String trimmedURL;
-      if (url.startsWith(PREFIX_THIN)) {
-        trimmedURL = url.substring(PREFIX_THIN.length());
-      } else {
-        trimmedURL = url.substring(PREFIX_OCI.length());
-      }
-      OracleConnectionInfo connectionInfo = parseTnsName(trimmedURL);
-      if (connectionInfo == null) {
-        connectionInfo = parseEasyConnect(trimmedURL);
-      }
-      if (connectionInfo != null) {
-        return new ConnectionInfo.Builder(connectionInfo.getDbPeer()) //
-            .dbType(DB_TYPE) //
-            .dbInstance(connectionInfo.getDbInstance()) //
-            .build();
+    if (url!= null) {
+      String lowerCaseUrl = url.toLowerCase();
+      if ((lowerCaseUrl.startsWith(PREFIX_THIN) || lowerCaseUrl.startsWith(PREFIX_OCI))) {
+        String trimmedURL;
+        if (lowerCaseUrl.startsWith(PREFIX_THIN)) {
+          trimmedURL = url.substring(PREFIX_THIN.length());
+        } else {
+          trimmedURL = url.substring(PREFIX_OCI.length());
+        }
+        OracleConnectionInfo connectionInfo = parseTnsName(trimmedURL);
+        if (connectionInfo == null) {
+          connectionInfo = parseEasyConnect(trimmedURL);
+        }
+        if (connectionInfo != null) {
+          return new ConnectionInfo.Builder(connectionInfo.getDbPeer()) //
+              .dbType(DB_TYPE) //
+              .dbInstance(connectionInfo.getDbInstance()) //
+              .build();
+        }
       }
     }
     return null;
