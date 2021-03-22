@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 The OpenTracing Authors
+ * Copyright 2017-2021 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -25,13 +25,14 @@ import java.util.regex.Pattern;
 public class DB2URLParser extends AbstractMatcherURLParser {
 
 
-    private static final Pattern DB2_URL_PATTERN = Pattern
-        .compile("jdbc:db2:\\/\\/(?<host>[^:^\\/]+)(:(?<port>\\d+))?\\/(?<instance>[^\\?^:]+)(:(?<options>.*))?");
+  private static final Pattern DB2_URL_PATTERN = Pattern
+      .compile(
+          "jdbc:db2:\\/\\/(?<host>[^:\\/]+)(:(?<port>\\d+))?\\/(?<instance>[^:]+)(:(?<options>.*))?");
 
-    private static final String DB2_TYPE = "db2";
+  private static final String DB2_TYPE = "db2";
 
-    public DB2URLParser() {
-        super(DB2_URL_PATTERN, DB2_TYPE);
-    }
+  public DB2URLParser() {
+    super(DB2_URL_PATTERN, DB2_TYPE);
+  }
 
 }

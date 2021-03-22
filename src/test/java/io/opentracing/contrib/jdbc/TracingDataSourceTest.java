@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 The OpenTracing Authors
+ * Copyright 2017-2021 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -13,6 +13,7 @@
  */
 package io.opentracing.contrib.jdbc;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -30,7 +31,8 @@ public class TracingDataSourceTest {
   public void traces_acquiring_connection() throws Exception {
     final BasicDataSource dataSource = getDataSource();
     final MockTracer mockTracer = new MockTracer();
-    try (final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer, dataSource)) {
+    try (final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer,
+        dataSource)) {
       try (final Connection connection = tracingDataSource.getConnection()) {
         assertFalse(mockTracer.finishedSpans().isEmpty());
       }
@@ -41,7 +43,8 @@ public class TracingDataSourceTest {
   public void sets_error() throws Exception {
     final BasicDataSource dataSource = getErroneousDataSource();
     final MockTracer mockTracer = new MockTracer();
-    try (final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer, dataSource)) {
+    try (final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer,
+        dataSource)) {
       try (final Connection connection = tracingDataSource.getConnection()) {
         assertNull("Get connection", connection);
       } catch (SQLException ignored) {
@@ -57,9 +60,24 @@ public class TracingDataSourceTest {
   public void rethrows_any_error() throws Exception {
     final BasicDataSource dataSource = getErroneousDataSource();
     final MockTracer mockTracer = new MockTracer();
-    try (final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer, dataSource)) {
+    try (final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer,
+        dataSource)) {
       tracingDataSource.getConnection();
     }
+  }
+
+  @Test
+  public void detect_connection_info() throws Exception {
+    final BasicDataSource dataSource = getDataSource();
+    final MockTracer mockTracer = new MockTracer();
+    try (final TracingDataSource tracingDataSource = new TracingDataSource(mockTracer,
+        dataSource)) {
+      tracingDataSource.getConnection();
+    }
+    assertFalse(mockTracer.finishedSpans().isEmpty());
+    MockSpan finishedSpan = mockTracer.finishedSpans().get(0);
+    assertEquals("Span contains tag db.type=h2", "h2",
+        finishedSpan.tags().get(Tags.DB_TYPE.getKey()));
   }
 
   private static BasicDataSource getDataSource() {

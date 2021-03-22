@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 The OpenTracing Authors
+ * Copyright 2017-2021 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -31,7 +31,9 @@ public class PostgreSQLURLParser extends AbstractURLParser {
 
   @Override
   protected URLLocation fetchDatabaseNameIndexRange(String url) {
-    int databaseStartTag = url.lastIndexOf("/");
+    int hostLabelStartIndex = url.indexOf("//");
+    int hostLabelEndIndex = url.indexOf("/", hostLabelStartIndex + 2);
+    int databaseStartTag = url.indexOf("/", hostLabelEndIndex);
     int databaseEndTag = url.indexOf("?", databaseStartTag);
     if (databaseEndTag == -1) {
       databaseEndTag = url.length();

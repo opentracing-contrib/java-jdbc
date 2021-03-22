@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 The OpenTracing Authors
+ * Copyright 2017-2021 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -13,13 +13,12 @@
  */
 package io.opentracing.contrib.jdbc;
 
-import static io.opentracing.contrib.jdbc.JdbcTracingUtils.buildSpan;
 
-import io.opentracing.Scope;
-import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.common.WrapperProxy;
+import io.opentracing.contrib.jdbc.parser.URLParser;
 import java.io.PrintWriter;
+import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -40,7 +39,7 @@ public class TracingDataSource implements DataSource, AutoCloseable {
 
   public TracingDataSource(final Tracer tracer,
       final DataSource underlying) {
-    this(tracer, underlying, ConnectionInfo.UNKNOWN_CONNECTION_INFO, DEFAULT_WITH_ACTIVE_SPAN_ONLY,
+    this(tracer, underlying, null, DEFAULT_WITH_ACTIVE_SPAN_ONLY,
         DEFAULT_IGNORED_STATEMENTS);
   }
 
@@ -51,7 +50,21 @@ public class TracingDataSource implements DataSource, AutoCloseable {
       final Set<String> ignoreStatements) {
     this.tracer = tracer;
     this.underlying = underlying;
-    this.connectionInfo = connectionInfo;
+    ConnectionInfo info = connectionInfo;
+    if (info == null) {
+      try {
+        Method method;
+        try {
+          method = underlying.getClass().getMethod("getJdbcUrl");
+        } catch (NoSuchMethodException e) {
+          method = underlying.getClass().getMethod("getUrl");
+        }
+        info = URLParser.parse((String) method.invoke(underlying));
+      } catch (Exception ignored) {
+        info = ConnectionInfo.UNKNOWN_CONNECTION_INFO;
+      }
+    }
+    this.connectionInfo = info;
     this.withActiveSpanOnly = withActiveSpanOnly;
     this.ignoreStatements = ignoreStatements;
   }
@@ -62,17 +75,9 @@ public class TracingDataSource implements DataSource, AutoCloseable {
 
   @Override
   public Connection getConnection() throws SQLException {
-    final Span span = buildSpan("AcquireConnection", "", connectionInfo, withActiveSpanOnly,
-        ignoreStatements, tracer);
-    final Connection connection;
-    try (Scope ignored = tracer.activateSpan(span)) {
-      connection = underlying.getConnection();
-    } catch (Exception e) {
-      JdbcTracingUtils.onError(e, span);
-      throw e;
-    } finally {
-      span.finish();
-    }
+    final Connection connection = JdbcTracingUtils
+        .call("AcquireConnection", underlying::getConnection,
+            null, connectionInfo, withActiveSpanOnly, null, tracer);
 
     return WrapperProxy
         .wrap(connection, new TracingConnection(connection, connectionInfo, withActiveSpanOnly,
@@ -82,17 +87,9 @@ public class TracingDataSource implements DataSource, AutoCloseable {
   @Override
   public Connection getConnection(final String username, final String password)
       throws SQLException {
-    final Span span = buildSpan("AcquireConnection", "", connectionInfo, withActiveSpanOnly,
-        ignoreStatements, tracer);
-    final Connection connection;
-    try (Scope ignored = tracer.activateSpan(span)) {
-      connection = underlying.getConnection(username, password);
-    } catch (Exception e) {
-      JdbcTracingUtils.onError(e, span);
-      throw e;
-    } finally {
-      span.finish();
-    }
+    final Connection connection = JdbcTracingUtils.call("AcquireConnection", () ->
+            underlying.getConnection(username, password), null, connectionInfo,
+        withActiveSpanOnly, null, tracer);
 
     return WrapperProxy
         .wrap(connection, new TracingConnection(connection, connectionInfo, withActiveSpanOnly,

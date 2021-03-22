@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 The OpenTracing Authors
+ * Copyright 2017-2021 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -25,7 +25,7 @@ public class OracleURLParser implements ConnectionURLParser {
   public static final String PREFIX_OCI = "jdbc:oracle:oci:";
   public static final int DEFAULT_PORT = 1521;
   private static Pattern EASY_CONNECT_PATTERN = Pattern.compile(
-      "(?<username>.*)@(//)?(?<host>[^:/]+)(?<port>:[0-9]+)?(?<service>[:/][^:/]+)?(?<server>:[^:/]+)?(?<instance>/[^:/]+)?");
+      "(?<username>.*)@(?<ldap>ldap:)?(//)?(?<host>[^:/]+)(?<port>:[0-9]+)?(?<service>[:/][^:/]+)?(?<server>:[^:/]+)?(?<instance>/[^:/]+)?");
 
   @Override
   public ConnectionInfo parse(final String url) {

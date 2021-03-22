@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 The OpenTracing Authors
+ * Copyright 2017-2021 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -13,10 +13,6 @@
  */
 package io.opentracing.contrib.jdbc;
 
-import static io.opentracing.contrib.jdbc.JdbcTracingUtils.buildSpan;
-
-import io.opentracing.Scope;
-import io.opentracing.Span;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.common.WrapperProxy;
 import io.opentracing.contrib.jdbc.parser.URLParser;
@@ -95,19 +91,17 @@ public class TracingDriver implements Driver {
     }
   }
 
-  private static boolean traceEnabled = true;
-
   /**
    * Sets the {@code traceEnabled} property to enable or disable traces.
    *
    * @param traceEnabled The {@code traceEnabled} value.
    */
   public static void setTraceEnabled(boolean traceEnabled) {
-    TracingDriver.traceEnabled = traceEnabled;
+    JdbcTracing.setTraceEnabled(traceEnabled);
   }
 
   public static boolean isTraceEnabled() {
-    return TracingDriver.traceEnabled;
+    return JdbcTracing.isTraceEnabled();
   }
 
   private static boolean interceptorMode = false;
@@ -170,15 +164,11 @@ public class TracingDriver implements Driver {
     final Driver wrappedDriver = findDriver(url);
 
     final Tracer currentTracer = getTracer();
-    final ConnectionInfo connectionInfo = URLParser.parser(url);
-    final Span span = buildSpan("AcquireConnection", "", connectionInfo, withActiveSpanOnly,
-        Collections.<String>emptySet(), currentTracer);
-    final Connection connection;
-    try (Scope ignored = currentTracer.activateSpan(span)) {
-      connection = wrappedDriver.connect(url, info);
-    } finally {
-      span.finish();
-    }
+    final ConnectionInfo connectionInfo = URLParser.parse(url);
+    final String realUrl = url;
+    final Connection connection = JdbcTracingUtils.call("AcquireConnection", () ->
+            wrappedDriver.connect(realUrl, info), null, connectionInfo, withActiveSpanOnly,
+        null, currentTracer);
 
     return WrapperProxy
         .wrap(connection, new TracingConnection(connection, connectionInfo, withActiveSpanOnly,

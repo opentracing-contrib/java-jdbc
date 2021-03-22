@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 The OpenTracing Authors
+ * Copyright 2017-2021 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -25,13 +25,14 @@ import java.util.regex.Pattern;
  */
 public class AS400URLParser extends AbstractMatcherURLParser {
 
-    private static final Pattern AS400_URL_PATTERN = Pattern
-        .compile("jdbc:as400:\\/\\/(?<host>[^\\/^;]+)(\\/(?<instance>[^;^\\/]*))?\\/?(;(?<options>.*))?");
+  private static final Pattern AS400_URL_PATTERN = Pattern
+      .compile(
+          "jdbc:as400:\\/\\/(?<host>[^\\/;]+)(\\/(?<instance>[^;\\/]*))?\\/?(;(?<options>.*))?");
 
-    private static final String AS400_TYPE = "as400";
+  private static final String AS400_TYPE = "as400";
 
-    public AS400URLParser() {
-        super(AS400_URL_PATTERN, AS400_TYPE);
-    }
+  public AS400URLParser() {
+    super(AS400_URL_PATTERN, AS400_TYPE);
+  }
 
 }

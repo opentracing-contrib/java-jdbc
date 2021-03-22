@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 The OpenTracing Authors
+ * Copyright 2017-2021 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -13,14 +13,13 @@
  */
 package io.opentracing.contrib.jdbc.parser;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import io.opentracing.contrib.jdbc.ConnectionInfo;
+import java.util.stream.Stream;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
-
-import java.util.stream.Stream;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 class SqlServerURLParserTest {
   private static final String SQLSERVER = "sqlserver";
@@ -30,9 +29,15 @@ class SqlServerURLParserTest {
     return Stream.of(
         Arguments.of("jdbc:sqlserver://localhost\\instanceName:1435", "localhost:1435", null),
         Arguments.of("jdbc:sqlserver://localhost;integratedSecurity=true;", "localhost:1433", null),
-        Arguments.of("jdbc:sqlserver://localhost;databaseName=AdventureWorks;integratedSecurity=true;", "localhost:1433", "AdventureWorks"),
-        Arguments.of("jdbc:sqlserver://localhost:1433;databaseName=AdventureWorks;integratedSecurity=true;", "localhost:1433", "AdventureWorks"),
-        Arguments.of("jdbc:sqlserver://localhost;databaseName=AdventureWorks;integratedSecurity=true;applicationName=MyApp;", "localhost:1433", "AdventureWorks")
+        Arguments
+            .of("jdbc:sqlserver://localhost;databaseName=AdventureWorks;integratedSecurity=true;",
+                "localhost:1433", "AdventureWorks"),
+        Arguments
+            .of("jdbc:sqlserver://localhost:1433;databaseName=AdventureWorks;integratedSecurity=true;",
+                "localhost:1433", "AdventureWorks"),
+        Arguments
+            .of("jdbc:sqlserver://localhost;databaseName=AdventureWorks;integratedSecurity=true;applicationName=MyApp;",
+                "localhost:1433", "AdventureWorks")
     );
   }
 

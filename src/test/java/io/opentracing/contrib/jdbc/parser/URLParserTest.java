@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 The OpenTracing Authors
+ * Copyright 2017-2021 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -24,7 +24,7 @@ public class URLParserTest {
   private static final String ORACLE = "oracle";
   private static final String POSTGRESQL = "postgresql";
   private static final String H2 = "h2";
-  private static final String MARIADB= "mariadb";
+  private static final String MARIADB = "mariadb";
 
   @Test
   public void testParseMysqlJDBCURLWithHost() {
@@ -33,6 +33,14 @@ public class URLParserTest {
     assertEquals("test", connectionInfo.getDbInstance());
     assertEquals("primaryhost:3306", connectionInfo.getDbPeer());
     assertEquals("test[mysql(primaryhost:3306)]", connectionInfo.getPeerService());
+  }
+
+  public void testParseMysqlJDBCURLWithoutHost() {
+    ConnectionInfo connectionInfo = URLParser.parse("jdbc:mysql///test");
+    assertEquals(MYSQL, connectionInfo.getDbType());
+    assertEquals("test", connectionInfo.getDbInstance());
+    assertEquals("localhost:3306", connectionInfo.getDbPeer());
+    assertEquals("test[mysql(localhost:3306)]", connectionInfo.getPeerService());
   }
 
   @Test
@@ -55,7 +63,7 @@ public class URLParserTest {
   @Test
   public void testParseMysqlJDBCURLWithHostAndPort() {
     ConnectionInfo connectionInfo = URLParser
-        .parser("jdbc:mysql//primaryhost:3307/test?profileSQL=true");
+        .parse("jdbc:mysql//primaryhost:3307/test?profileSQL=true");
     assertEquals(MYSQL, connectionInfo.getDbType());
     assertEquals("test", connectionInfo.getDbInstance());
     assertEquals("primaryhost:3307", connectionInfo.getDbPeer());
@@ -65,7 +73,7 @@ public class URLParserTest {
   @Test
   public void testParseMysqlJDBCURLWithMultiHost() {
     ConnectionInfo connectionInfo = URLParser
-        .parser("jdbc:mysql//primaryhost:3307,secondaryhost1,secondaryhost2/test?profileSQL=true");
+        .parse("jdbc:mysql//primaryhost:3307,secondaryhost1,secondaryhost2/test?profileSQL=true");
     assertEquals(MYSQL, connectionInfo.getDbType());
     assertEquals("test", connectionInfo.getDbInstance());
     assertEquals("primaryhost:3307,secondaryhost1:3306,secondaryhost2:3306",
@@ -77,7 +85,7 @@ public class URLParserTest {
   @Test
   public void testParseMysqlJDBCURLWithConnectorJs() {
     ConnectionInfo connectionInfo = URLParser
-        .parser("jdbc:mysql:replication://master,slave1,slave2,slave3/test");
+        .parse("jdbc:mysql:replication://master,slave1,slave2,slave3/test");
     assertEquals(MYSQL, connectionInfo.getDbType());
     assertEquals("test", connectionInfo.getDbInstance());
     assertEquals("master:3306,slave1:3306,slave2:3306,slave3:3306", connectionInfo.getDbPeer());
@@ -135,7 +143,7 @@ public class URLParserTest {
   @Test
   public void testParseOracleJDBCURLWithUserNameAndPassword() {
     ConnectionInfo connectionInfo = URLParser
-        .parser("jdbc:oracle:thin:scott/tiger@myhost:1521:orcl");
+        .parse("jdbc:oracle:thin:scott/tiger@myhost:1521:orcl");
     assertEquals(ORACLE, connectionInfo.getDbType());
     assertEquals("orcl", connectionInfo.getDbInstance());
     assertEquals("myhost:1521", connectionInfo.getDbPeer());
@@ -145,11 +153,22 @@ public class URLParserTest {
   @Test
   public void testParseOracleJDBCURLWithSID() {
     ConnectionInfo connectionInfo = URLParser
-        .parser("jdbc:oracle:thin:@orcl");
+        .parse("jdbc:oracle:thin:@orcl");
     assertEquals(ORACLE, connectionInfo.getDbType());
     assertEquals("orcl", connectionInfo.getDbInstance());
     assertEquals("orcl:1521", connectionInfo.getDbPeer());
     assertEquals("orcl[oracle(orcl:1521)]", connectionInfo.getPeerService());
+  }
+
+  @Test
+  public void testParseOracleJDBCURLWithLDAP() {
+    ConnectionInfo connectionInfo = URLParser
+        .parse("jdbc:oracle:thin:@ldap://oid:5000/mydb1,cn=OracleContext,dc=myco,dc=com");
+    assertEquals(ORACLE, connectionInfo.getDbType());
+    assertEquals("mydb1,cn=OracleContext,dc=myco,dc=com", connectionInfo.getDbInstance());
+    assertEquals("oid:5000", connectionInfo.getDbPeer());
+    assertEquals("mydb1,cn=OracleContext,dc=myco,dc=com[oracle(oid:5000)]",
+        connectionInfo.getPeerService());
   }
 
   @Test
@@ -206,7 +225,7 @@ public class URLParserTest {
     assertEquals("primaryhost:5432", connectionInfo.getDbPeer());
     assertEquals("test[postgresql(primaryhost:5432)]", connectionInfo.getPeerService());
   }
-  
+
   @Test
   public void testParsePostgresqlJDBCURLWithIpv6Host() {
     ConnectionInfo connectionInfo = URLParser.parse("jdbc:postgresql://[::1]/test");
@@ -215,7 +234,7 @@ public class URLParserTest {
     assertEquals("[::1]:5432", connectionInfo.getDbPeer());
     assertEquals("test[postgresql([::1]:5432)]", connectionInfo.getPeerService());
   }
-  
+
   @Test
   public void testParsePostgresqlIllegalUrl() {
     ConnectionInfo connectionInfo = URLParser.parse("jdbc:postgresql://[::1 ]");
@@ -234,7 +253,18 @@ public class URLParserTest {
   @Test
   public void testParsePostgresqlJDBCURLWithHostAndPort() {
     ConnectionInfo connectionInfo = URLParser
-        .parser("jdbc:postgresql//primaryhost:3307/test?profileSQL=true");
+        .parse("jdbc:postgresql//primaryhost:3307/test?profileSQL=true");
+    assertEquals(POSTGRESQL, connectionInfo.getDbType());
+    assertEquals("test", connectionInfo.getDbInstance());
+    assertEquals("primaryhost:3307", connectionInfo.getDbPeer());
+    assertEquals("test[postgresql(primaryhost:3307)]", connectionInfo.getPeerService());
+  }
+
+  @Test
+  public void testParsePostgresqlJDBCURLWithSSLCertPath() {
+    ConnectionInfo connectionInfo = URLParser
+        .parse(
+            "jdbc:postgresql//primaryhost:3307/test?sslmode=verify-full&sslrootcert=/some/path.pem");
     assertEquals(POSTGRESQL, connectionInfo.getDbType());
     assertEquals("test", connectionInfo.getDbInstance());
     assertEquals("primaryhost:3307", connectionInfo.getDbPeer());
@@ -256,7 +286,7 @@ public class URLParserTest {
   @Test
   public void testParsePostgresqlJDBCURLWithConnectorJs() {
     ConnectionInfo connectionInfo = URLParser
-        .parser("jdbc:postgresql:replication://master,slave1,slave2,slave3/test");
+        .parse("jdbc:postgresql:replication://master,slave1,slave2,slave3/test");
     assertEquals(POSTGRESQL, connectionInfo.getDbType());
     assertEquals("test", connectionInfo.getDbInstance());
     assertEquals("master:5432,slave1:5432,slave2:5432,slave3:5432", connectionInfo.getDbPeer());
@@ -267,14 +297,14 @@ public class URLParserTest {
   @Test
   public void testNoParserFound() {
     ConnectionInfo connectionInfo = URLParser
-        .parser("jdbc:unknown_type//primaryhost?profileSQL=true");
+        .parse("jdbc:unknown_type//primaryhost?profileSQL=true");
     assertEquals(ConnectionInfo.UNKNOWN_CONNECTION_INFO, connectionInfo);
   }
 
   @Test
   public void testParseMariadbJDBCURLWithConnectorJs() {
     ConnectionInfo connectionInfo = URLParser
-            .parser("jdbc:mariadb://mdb.host:33/mdbdb?user=mdbuser&password=PW");
+        .parse("jdbc:mariadb://mdb.host:33/mdbdb?user=mdbuser&password=PW");
     assertEquals(MARIADB, connectionInfo.getDbType());
     assertEquals("mdbdb", connectionInfo.getDbInstance());
     assertEquals("mdb.host:33", connectionInfo.getDbPeer());
@@ -284,7 +314,7 @@ public class URLParserTest {
   @Test
   public void testParseMariadbJDBCURLWithAurora() {
     ConnectionInfo connectionInfo = URLParser
-            .parser("jdbc:mariadb:aurora://mdb.host/mdbdb");
+        .parse("jdbc:mariadb:aurora://mdb.host/mdbdb");
     assertEquals(MARIADB, connectionInfo.getDbType());
     assertEquals("mdbdb", connectionInfo.getDbInstance());
     assertEquals("mdb.host:3306", connectionInfo.getDbPeer());

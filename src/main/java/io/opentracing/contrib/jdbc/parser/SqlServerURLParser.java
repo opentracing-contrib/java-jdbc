@@ -1,5 +1,5 @@
 /*
- * Copyright 2017-2020 The OpenTracing Authors
+ * Copyright 2017-2021 The OpenTracing Authors
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except
  * in compliance with the License. You may obtain a copy of the License at
@@ -14,7 +14,6 @@
 package io.opentracing.contrib.jdbc.parser;
 
 import io.opentracing.contrib.jdbc.ConnectionInfo;
-
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -75,7 +74,7 @@ public class SqlServerURLParser implements ConnectionURLParser {
     }
 
     return new ConnectionInfo.Builder(serverName, port).dbType(dbType())
-            .dbInstance(dbInstance).build();
+        .dbInstance(dbInstance).build();
   }
 
   private Map<String, String> parseQueryParams(String query, String separator) {
@@ -87,9 +86,12 @@ public class SqlServerURLParser implements ConnectionURLParser {
     for (String pair : pairs) {
       try {
         int idx = pair.indexOf("=");
-        String key = idx > 0 ? URLDecoder.decode(pair.substring(0, idx), StandardCharsets.UTF_8.name()) : pair;
+        String key =
+            idx > 0 ? URLDecoder.decode(pair.substring(0, idx), StandardCharsets.UTF_8.name())
+                : pair;
         if (!queryParams.containsKey(key)) {
-          String value = idx > 0 && pair.length() > idx + 1 ? URLDecoder.decode(pair.substring(idx + 1), StandardCharsets.UTF_8.name()) : null;
+          String value = idx > 0 && pair.length() > idx + 1 ? URLDecoder
+              .decode(pair.substring(idx + 1), StandardCharsets.UTF_8.name()) : null;
           queryParams.put(key, value);
         }
       } catch (UnsupportedEncodingException e) {
