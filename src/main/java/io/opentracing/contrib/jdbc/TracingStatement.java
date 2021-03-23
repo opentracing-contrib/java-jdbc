@@ -15,6 +15,7 @@ package io.opentracing.contrib.jdbc;
 
 
 import io.opentracing.Tracer;
+import io.opentracing.contrib.common.WrapperProxy;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -287,6 +288,24 @@ public class TracingStatement implements Statement {
   @Override
   public String toString() {
     return getQuery();
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+        return true;
+    }
+    if (WrapperProxy.isWrapper(obj, getClass())) {
+      return obj.equals(this); // trick to get through the WrapperProxy/Proxy instances
+    }
+    if (!(obj instanceof Statement)) {
+        return false;
+    }
+    if (obj instanceof TracingStatement) {
+        return statement.equals(((TracingStatement) obj).statement);
+    } else {
+        return statement.equals(obj);
+    }
   }
 
   private String buildSqlForBatch() {

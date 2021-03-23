@@ -15,6 +15,7 @@ package io.opentracing.contrib.jdbc;
 
 
 import io.opentracing.Tracer;
+import io.opentracing.contrib.common.WrapperProxy;
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -332,6 +333,24 @@ public class TracingPreparedStatement extends TracingStatement implements Prepar
   @Override
   public void setNClob(int parameterIndex, Reader reader) throws SQLException {
     preparedStatement.setNClob(parameterIndex, reader);
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+        return true;
+    }
+    if (WrapperProxy.isWrapper(obj, getClass())) {
+      return obj.equals(this); // trick to get through the WrapperProxy/Proxy instances
+    }
+    if (!(obj instanceof PreparedStatement)) {
+        return false;
+    }
+    if (obj instanceof TracingPreparedStatement) {
+        return preparedStatement.equals(((TracingPreparedStatement) obj).preparedStatement);
+    } else {
+        return preparedStatement.equals(obj);
+    }
   }
 
 }
