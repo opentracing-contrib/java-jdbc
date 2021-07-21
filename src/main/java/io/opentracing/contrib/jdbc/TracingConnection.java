@@ -126,7 +126,7 @@ public class TracingConnection implements Connection {
   public CallableStatement prepareCall(String sql) throws SQLException {
     final CallableStatement statement = connection.prepareCall(sql);
     return WrapperProxy.wrap(statement,
-        new TracingCallableStatement(connection.prepareCall(sql), sql, connectionInfo,
+        new TracingCallableStatement(statement, sql, connectionInfo,
             withActiveSpanOnly, ignoreStatements, tracer));
   }
 
