@@ -132,6 +132,21 @@ public class TracingDataSource implements DataSource, AutoCloseable {
   }
 
   @Override
+  public boolean equals(Object obj) {
+    if (this == obj) {
+        return true;
+    }
+    if (!(obj instanceof DataSource)) {
+        return false;
+    }
+    if (obj instanceof TracingDataSource) {
+        return underlying.equals(((TracingDataSource) obj).underlying);
+    } else {
+        return underlying.equals(obj);
+    }
+  }
+
+  @Override
   public void close() throws Exception {
     if (underlying instanceof AutoCloseable) {
       ((AutoCloseable) underlying).close();
