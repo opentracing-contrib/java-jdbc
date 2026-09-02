@@ -24,3 +24,11 @@ run = "hk fix --all"
 [tasks.postlint]
 description = "Run post-lint checks"
 run = "git diff --exit-code"
+
+[tasks.license-check]
+description = "Check license headers"
+run = "./mvnw license:check -Djavadoc.skip=true"
+
+[tasks.license-fix]
+description = "Fix license headers"
+run = "./mvnw license:format -Djavadoc.skip=true"

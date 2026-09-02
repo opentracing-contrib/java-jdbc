@@ -24,39 +24,41 @@ pom.xml
 
 1. Activate tracing for JDBC connections by adding `tracing` to the JDBC url:
 
-   _jdbc:**tracing**:h2:mem:test_
+    _jdbc:**tracing**:h2:mem:test_
 
-   To trace calls with active `Span`s only, set property `traceWithActiveSpanOnly=true`.
+    To trace calls with active `Span`s only, set property `traceWithActiveSpanOnly=true`.
 
-   _jdbc:**tracing**:h2:mem:test?**traceWithActiveSpanOnly=true**_
+    _jdbc:**tracing**:h2:mem:test?**traceWithActiveSpanOnly=true**_
 
-   To ignore specific queries (such as health checks), use the
-   property `ignoreForTracing="SELECT 1"`. Double quotes can be escaped with `\`.
+    To ignore specific queries (such as health checks), use the
+    property `ignoreForTracing="SELECT 1"`. Double quotes can be escaped with `\`.
 
-   `SELECT * FROM \"TEST\"`<br><sup>The property can be repeated for multiple statements.</sup>
+    `SELECT * FROM \"TEST\"`
+
+    The property can be repeated for multiple statements.
 
 2. Set driver class to `io.opentracing.contrib.jdbc.TracingDriver`.
 
-   ```java
-   Class.forName("io.opentracing.contrib.jdbc.TracingDriver");
-   ```
+    ```java
+    Class.forName("io.opentracing.contrib.jdbc.TracingDriver");
+    ```
 
-   or
+    or
 
-   ```java
-   io.opentracing.contrib.jdbc.TracingDriver.load();
-   ```
+    ```java
+    io.opentracing.contrib.jdbc.TracingDriver.load();
+    ```
 
 3. Instantiate tracer and register it with GlobalTracer.
 
-   ```java
-   // Instantiate tracer
-   Tracer tracer = ...
+    ```java
+    // Instantiate tracer
+    Tracer tracer = ...
 
-   // Register tracer with GlobalTracer
-   GlobalTracer.register(tracer);
+    // Register tracer with GlobalTracer
+    GlobalTracer.register(tracer);
 
-   ```
+    ```
 
 ### Interceptor
 
@@ -71,8 +73,8 @@ For standalone applications:
 
 ```java
 public static void main(String[] args) {
-   io.opentracing.contrib.jdbc.TracingDriver.setInterceptorMode(true);
-   // some jdbc operation here
+    io.opentracing.contrib.jdbc.TracingDriver.setInterceptorMode(true);
+    // some jdbc operation here
 }
 
 ```
@@ -81,7 +83,7 @@ For web applications:
 
 ```java
 public void contextInitialized(ServletContextEvent event) {
-   io.opentracing.contrib.jdbc.TracingDriver.setInterceptorMode(true);
+    io.opentracing.contrib.jdbc.TracingDriver.setInterceptorMode(true);
 }
 ```
 
@@ -187,7 +189,7 @@ reported.
 
 1. Passing system property, E.g. `-Dio.opentracing.contrib.jdbc.excludeFastQueryThresholdMs=100`
 2. Modify value by code,
-   E.g. `io.opentracing.contrib.jdbc.JdbcTracing.setExcludeFastQueryThresholdMs(100)`
+    E.g. `io.opentracing.contrib.jdbc.JdbcTracing.setExcludeFastQueryThresholdMs(100)`
 
 ## Troubleshooting
 
@@ -198,9 +200,9 @@ configuring the datasource. E.g. `Class.forName("com.mysql.jdbc.Driver");`
 
 [Apache 2.0 License](./LICENSE).
 
-[ci-img]: https://travis-ci.org/opentracing-contrib/java-jdbc.svg?branch=master
+[ci-img]: https://github.com/opentracing-contrib/java-jdbc/actions/workflows/ci.yml/badge.svg
 
-[ci]: https://travis-ci.org/opentracing-contrib/java-jdbc
+[ci]: https://github.com/opentracing-contrib/java-jdbc/actions/workflows/ci.yml
 
 [cov-img]: https://coveralls.io/repos/github/opentracing-contrib/java-jdbc/badge.svg?branch=master
 
