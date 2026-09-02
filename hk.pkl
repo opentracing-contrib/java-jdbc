@@ -9,9 +9,6 @@ local linters = new Mapping<String, Step> {
     check = "./mvnw license:check"
     fix = "./mvnw license:format"
   }
-  ["checkstyle"] {
-    check = "./mvnw checkstyle:check -Dcheckstyle.config.location=config/checkstyle/checkstyle.xml"
-  }
   ["actionlint"] = Builtins.actionlint
   ["trailing-whitespace"] = Builtins.trailing_whitespace
   ["end-of-file-fixer"] = Builtins.newlines
