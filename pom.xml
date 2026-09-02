@@ -206,6 +206,7 @@
           </licenseSets>
           <failIfMissing>true</failIfMissing>
           <failIfUnknown>true</failIfUnknown>
+          <strictCheck>true</strictCheck>
         </configuration>
         <executions>
           <execution>
