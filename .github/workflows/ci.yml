@@ -1,0 +1,85 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+    tags:
+      - "*"
+  pull_request:
+    branches:
+      - master
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.ref_name }}-ci
+  cancel-in-progress: true
+
+jobs:
+  release-notes:
+    name: Create/Update release notes
+    permissions:
+      contents: write
+    runs-on: ubuntu-24.04
+    if: ${{ github.event_name != 'pull_request' }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      - name: Create/Update Draft
+        uses: lucacome/draft-release@v2.2.1
+        with:
+          minor-label: "enhancement"
+          major-label: "change"
+          publish: ${{ github.ref_type == 'tag' }}
+          collapse-after: 50
+
+  license:
+    name: License header check
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: maven
+
+      - name: Check license headers
+        run: ./mvnw license:check
+
+  test:
+    name: Test
+    runs-on: ubuntu-24.04
+    needs: license
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          # needed by license-maven-plugin, which inspects git history
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '11'
+          cache: maven
+
+      - name: Build and test
+        run: ./mvnw clean install -Dmaven.javadoc.skip=true
+
+      - name: Submit dependency graph
+        uses: advanced-security/maven-dependency-submission-action@v5
+        if: github.event_name == 'push'

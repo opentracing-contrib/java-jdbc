@@ -1,0 +1,30 @@
+---
+changelog:
+  exclude:
+    labels:
+      - skip changelog
+  categories:
+    - title: 💣 Breaking Changes
+      labels:
+        - change
+    - title: 🚀 Features
+      labels:
+        - enhancement
+    - title: 🐛 Bug Fixes
+      labels:
+        - bug
+    - title: 🧪 Tests
+      labels:
+        - tests
+    - title: 🔨 Maintenance
+      labels:
+        - chore
+    - title: 📝 Documentation
+      labels:
+        - documentation
+    - title: ⬆️ Dependencies
+      labels:
+        - dependencies
+    - title: Other Changes
+      labels:
+        - "*"
