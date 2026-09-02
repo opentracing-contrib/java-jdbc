@@ -6,7 +6,7 @@ exclude = List(".travis.yml", "LICENSE")
 
 local linters = new Mapping<String, Step> {
   ["check-license"] {
-    check = "mise run check-license"
+    check = "mise run license-check"
     fix = "mise run license-fix"
   }
   ["actionlint"] = Builtins.actionlint
