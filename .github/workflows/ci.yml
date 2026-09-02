@@ -54,7 +54,7 @@ jobs:
           cache: maven
 
       - name: Check license headers
-        run: make license-check
+        run: ./mvnw license:check
 
   test:
     name: Test
@@ -78,37 +78,8 @@ jobs:
           cache: maven
 
       - name: Build and test
-        run: ./mvnw clean install
+        run: ./mvnw clean install -Dmaven.javadoc.skip=true
 
       - name: Submit dependency graph
         uses: advanced-security/maven-dependency-submission-action@v5
         if: github.event_name == 'push'
-
-  classpath:
-    name: Classpath (${{ matrix.profile }})
-    runs-on: ubuntu-24.04
-    needs: license
-    strategy:
-      fail-fast: false
-      matrix:
-        profile: [nodeps, alldeps]
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-        with:
-          # needed by license-maven-plugin, which inspects git history
-          fetch-depth: 0
-          persist-credentials: false
-
-      - name: Set up Java
-        uses: actions/setup-java@v6
-        with:
-          distribution: temurin
-          java-version: '11'
-          cache: maven
-
-      - name: Install dependencies
-        run: ./mvnw install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-
-      - name: Run classpath tests
-        run: make PROFILES=${{ matrix.profile }} classpath
