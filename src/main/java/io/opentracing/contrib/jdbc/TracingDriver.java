@@ -71,14 +71,13 @@ public class TracingDriver implements Driver {
   public synchronized static void ensureRegisteredAsTheFirstDriver() {
     try {
       Enumeration<Driver> enumeration = DriverManager.getDrivers();
-      List<Driver> drivers = null;
+      List<Driver> drivers = new ArrayList<>();
       for (int i = 0; enumeration.hasMoreElements(); ++i) {
         Driver driver = enumeration.nextElement();
         if (i == 0) {
           if (driver == INSTANCE) {
             return;
           }
-          drivers = new ArrayList<>();
         }
         if (driver != INSTANCE) {
           drivers.add(driver);
