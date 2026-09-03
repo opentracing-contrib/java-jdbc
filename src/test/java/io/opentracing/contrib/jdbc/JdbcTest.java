@@ -135,10 +135,11 @@ public class JdbcTest {
   public void testFailInterceptor() throws Exception {
     TracingDriver.setInterceptorMode(false);
     try (Connection connection = DriverManager.getConnection("jdbc:h2:mem:jdbc")) {
-      Statement statement = connection.createStatement();
-      try {
-        statement.executeUpdate("CREATE TABLE employer (id INTEGER2)");
-      } catch (Exception ignore) {
+      try (Statement statement = connection.createStatement()) {
+        try {
+          statement.executeUpdate("CREATE TABLE employer (id INTEGER2)");
+        } catch (Exception ignore) {
+        }
       }
       assertGetDriver(connection);
     }
